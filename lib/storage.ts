@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 const PROPERTY_BUCKET = "property-images";
@@ -6,7 +6,22 @@ const COMPLAINT_BUCKET = "complaint-images";
 const LEASE_DOCUMENT_BUCKET = "lease-documents";
 const TENANT_DOCUMENT_BUCKET = "tenant-documents";
 
-const supabaseAdmin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!);
+// Created lazily (not at module load) so importing this file — which Next.js
+// does when statically analyzing API routes at build time — doesn't crash
+// the build in environments where SUPABASE_URL/SUPABASE_SECRET_KEY aren't
+// set yet. Only actually uploading/deleting a file needs the real values.
+let cachedClient: SupabaseClient | null = null;
+function getSupabaseAdmin(): SupabaseClient {
+  if (!cachedClient) {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SECRET_KEY;
+    if (!url || !key) {
+      throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY must be set to use file storage");
+    }
+    cachedClient = createClient(url, key);
+  }
+  return cachedClient;
+}
 
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const DOCUMENT_TYPES = new Set([...IMAGE_TYPES, "application/pdf"]);
@@ -33,6 +48,7 @@ export function isAllowedDocument(file: File): string | null {
 }
 
 async function uploadFile(bucket: string, folder: string, file: File): Promise<string> {
+  const supabaseAdmin = getSupabaseAdmin();
   const ext = file.name.split(".").pop() ?? "bin";
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
 
@@ -51,7 +67,7 @@ async function deleteFile(bucket: string, publicUrl: string): Promise<void> {
   const index = publicUrl.indexOf(marker);
   if (index === -1) return;
   const path = publicUrl.slice(index + marker.length);
-  await supabaseAdmin.storage.from(bucket).remove([path]);
+  await getSupabaseAdmin().storage.from(bucket).remove([path]);
 }
 
 export function uploadPropertyImage(propertyId: string, file: File): Promise<string> {
