@@ -1,0 +1,478 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  LANDLORD
+  TENANT
+  CARETAKER
+}
+
+enum UnitStatus {
+  VACANT
+  OCCUPIED
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  HOSTEL
+  SHELL_HOUSE
+  SEMI_DETACHED
+  STOREYED_BUILDING
+  STUDIO_ROOM
+  MANSION
+  DUPLEX
+  BUNGALOW
+  STANDALONE
+  MALL
+  ARCADE
+  RENTAL_UNITS
+}
+
+enum PropertyUsage {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum LeaseStatus {
+  ACTIVE
+  ENDED
+  TERMINATED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE_MONEY
+  BANK
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
+enum ReviewDirection {
+  TENANT_TO_LANDLORD
+  LANDLORD_TO_TENANT
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum NotificationType {
+  NEW_COMPLAINT
+  COMPLAINT_UPDATE
+  RENT_INCREASE
+  DOCUMENT_UPLOADED
+  RENT_DUE_SOON
+  RENT_OVERDUE
+  MAINTENANCE_UPDATE
+  NEW_MESSAGE
+}
+
+enum TenantDocumentType {
+  ID
+  PASSPORT
+  LETTER
+  OTHER
+}
+
+enum LateFeeType {
+  FLAT
+  PERCENT
+}
+
+enum MaintenanceStatus {
+  OPEN
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String?  @unique
+  email        String?  @unique
+  passwordHash String?
+  role         Role?
+
+  acceptsCash         Boolean  @default(true)
+  acceptsMobileMoney  Boolean  @default(false)
+  momoProvider        String?
+  momoNumber          String?
+  acceptsBankTransfer Boolean  @default(false)
+  bankName            String?
+  bankAccountName     String?
+  bankAccountNumber   String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  properties            Property[]            @relation("LandlordProperties")
+  leasesAsTenant        Lease[]               @relation("TenantLeases")
+  caretakerAssignments  CaretakerAssignment[] @relation("CaretakerAssignments")
+  caretakerRentLogs     CaretakerRentLog[]    @relation("CaretakerRentLogs")
+  reviewsAuthored       Review[]              @relation("ReviewAuthor")
+  reviewsReceived       Review[]              @relation("ReviewTarget")
+  complaints            Complaint[]           @relation("TenantComplaints")
+  notifications         Notification[]        @relation("UserNotifications")
+  documents             TenantDocument[]      @relation("TenantDocuments")
+  passwordResetTokens   PasswordResetToken[]  @relation("PasswordResetTokens")
+  maintenanceRequests   MaintenanceRequest[]  @relation("MaintenanceCreatedBy")
+  sentMessages          Message[]             @relation("SentMessages")
+
+  @@index([role])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation("PasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Property {
+  id           String        @id @default(cuid())
+  landlordId   String
+  landlord     User          @relation("LandlordProperties", fields: [landlordId], references: [id], onDelete: Cascade)
+  name         String
+  address      String
+  location     String?
+  description  String?
+  usage        PropertyUsage?
+  propertyType PropertyType?
+  amenities    String[]      @default([])
+
+  lateFeeEnabled   Boolean      @default(false)
+  lateFeeType      LateFeeType?
+  lateFeeValue     Decimal?     @db.Decimal(12, 2)
+  lateFeeGraceDays Int?
+
+  viewCount Int @default(0)
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  units                 Unit[]
+  images                PropertyImage[]
+  caretakerAssignments  CaretakerAssignment[]
+  maintenanceRequests   MaintenanceRequest[]
+  reviews               Review[]
+
+  @@index([landlordId])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  order      Int      @default(0)
+  featured   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+}
+
+model Unit {
+  id            String       @id @default(cuid())
+  propertyId    String
+  property      Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  label         String
+  bedrooms      Int          @default(1)
+  bathrooms     Int?
+  otherRooms    String?
+  rentAmount    Decimal      @db.Decimal(12, 2)
+  billingCycle  BillingCycle @default(MONTHLY)
+  status        UnitStatus   @default(VACANT)
+  floor         String?
+  shopNumber    String?
+  dimensions    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  leases               Lease[]
+  caretakerLogs        CaretakerRentLog[]
+  maintenanceRequests  MaintenanceRequest[]
+
+  @@index([propertyId])
+}
+
+model Lease {
+  id             String      @id @default(cuid())
+  unitId         String
+  unit           Unit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  tenantId       String
+  tenant         User        @relation("TenantLeases", fields: [tenantId], references: [id], onDelete: Cascade)
+  startDate      DateTime
+  endDate        DateTime?
+  rentAmount     Decimal     @db.Decimal(12, 2)
+  depositAmount  Decimal     @db.Decimal(12, 2)
+  status         LeaseStatus @default(ACTIVE)
+
+  agreementFileUrl       String?
+  agreementFileName      String?
+  signedAgreementFileUrl String?
+  signedAgreementFileName String?
+
+  depositDeductions    Decimal?  @db.Decimal(12, 2)
+  depositDeductionNote String?
+  depositRefundAmount  Decimal?  @db.Decimal(12, 2)
+  depositRefundedAt    DateTime?
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  invoices     RentInvoice[]
+  reviews      Review[]
+  complaints   Complaint[]
+  rentChanges  RentChange[]
+  conversation Conversation?
+
+  @@index([unitId])
+  @@index([tenantId])
+}
+
+model RentChange {
+  id            String   @id @default(cuid())
+  leaseId       String
+  lease         Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  newRentAmount Decimal  @db.Decimal(12, 2)
+  effectiveDate DateTime
+  note          String?
+  createdAt     DateTime @default(now())
+
+  @@index([leaseId])
+}
+
+model Complaint {
+  id             String          @id @default(cuid())
+  leaseId        String
+  lease          Lease           @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  tenantId       String
+  tenant         User            @relation("TenantComplaints", fields: [tenantId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  status         ComplaintStatus @default(OPEN)
+  resolutionNote String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  images ComplaintImage[]
+
+  @@index([leaseId])
+  @@index([tenantId])
+  @@index([status])
+}
+
+model ComplaintImage {
+  id          String    @id @default(cuid())
+  complaintId String
+  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  url         String
+  createdAt   DateTime  @default(now())
+
+  @@index([complaintId])
+}
+
+model TenantDocument {
+  id       String             @id @default(cuid())
+  tenantId String
+  tenant   User               @relation("TenantDocuments", fields: [tenantId], references: [id], onDelete: Cascade)
+  type     TenantDocumentType
+  label    String?
+  url      String
+  fileName String
+  createdAt DateTime          @default(now())
+
+  @@index([tenantId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+model RentInvoice {
+  id          String        @id @default(cuid())
+  leaseId     String
+  lease       Lease         @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  periodStart DateTime
+  periodEnd   DateTime
+  dueDate     DateTime
+  amountDue   Decimal       @db.Decimal(12, 2)
+  lateFeeAmount Decimal     @db.Decimal(12, 2) @default(0)
+  status      InvoiceStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  payments Payment[]
+
+  @@index([leaseId])
+  @@index([status])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  invoiceId   String
+  invoice     RentInvoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Decimal       @db.Decimal(12, 2)
+  method      PaymentMethod
+  provider    String?
+  providerRef String?
+  status      PaymentStatus @default(SUCCESSFUL)
+  paidAt      DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+
+  receipt Receipt?
+
+  @@index([invoiceId])
+}
+
+model Receipt {
+  id            String   @id @default(cuid())
+  paymentId     String   @unique
+  payment       Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  receiptNumber String   @unique
+  issuedAt      DateTime @default(now())
+}
+
+model CaretakerAssignment {
+  id           String   @id @default(cuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  caretakerId  String
+  caretaker    User     @relation("CaretakerAssignments", fields: [caretakerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([propertyId, caretakerId])
+  @@index([caretakerId])
+}
+
+model CaretakerRentLog {
+  id                 String    @id @default(cuid())
+  caretakerId        String
+  caretaker          User      @relation("CaretakerRentLogs", fields: [caretakerId], references: [id], onDelete: Cascade)
+  unitId             String
+  unit               Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  amountCollected    Decimal   @db.Decimal(12, 2)
+  collectedAt        DateTime
+  note               String?
+  verifiedByLandlordAt DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([caretakerId])
+  @@index([unitId])
+}
+
+model Review {
+  id        String          @id @default(cuid())
+  authorId  String
+  author    User            @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  targetId  String
+  target    User            @relation("ReviewTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  leaseId    String
+  lease      Lease           @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  propertyId String?
+  property   Property?       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  direction  ReviewDirection
+  rating     Int
+  comment    String?
+  createdAt  DateTime        @default(now())
+
+  @@unique([authorId, leaseId, direction])
+  @@index([targetId])
+  @@index([propertyId])
+}
+
+model MaintenanceRequest {
+  id          String              @id @default(cuid())
+  propertyId  String
+  property    Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId      String?
+  unit        Unit?               @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  createdById String
+  createdBy   User                @relation("MaintenanceCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  priority    MaintenancePriority @default(MEDIUM)
+  status      MaintenanceStatus   @default(OPEN)
+  scheduledDate DateTime?
+  cost        Decimal?            @db.Decimal(12, 2)
+  vendor      String?
+  completedAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([propertyId])
+  @@index([unitId])
+  @@index([status])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  leaseId   String   @unique
+  lease     Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  messages Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+}
