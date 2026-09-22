@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { PrintButton } from "@/components/print-button";
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
@@ -57,7 +57,9 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
         <div className="mt-6 border-t border-slate-200 pt-4">
           <p className="text-sm text-slate-500">Amount paid</p>
-          <p className="text-2xl font-semibold text-slate-900">{formatUGX(payment.amount.toString())}</p>
+          <p className="text-2xl font-semibold text-slate-900">
+            {formatMoney(payment.amount.toString(), payment.currency)}
+          </p>
         </div>
       </div>
     </div>

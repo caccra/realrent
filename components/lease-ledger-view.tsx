@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { buildLeaseLedger } from "@/lib/lease-ledger";
 
 type Invoice = Parameters<typeof buildLeaseLedger>[0][number];
@@ -7,13 +7,14 @@ type Invoice = Parameters<typeof buildLeaseLedger>[0][number];
 export function LeaseLedgerView({ invoices }: { invoices: Invoice[] }) {
   const entries = buildLeaseLedger(invoices);
   const currentBalance = entries.length > 0 ? entries[entries.length - 1].balance : 0;
+  const currency = entries.length > 0 ? entries[entries.length - 1].currency : "UGX";
 
   return (
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-medium text-slate-900">Ledger</h2>
         <span className={`text-sm font-semibold ${currentBalance > 0 ? "text-red-700" : "text-emerald-700"}`}>
-          {currentBalance > 0 ? `Owes ${formatUGX(currentBalance)}` : "Paid up"}
+          {currentBalance > 0 ? `Owes ${formatMoney(currentBalance, currency)}` : "Paid up"}
         </span>
       </div>
 
@@ -39,17 +40,17 @@ export function LeaseLedgerView({ invoices }: { invoices: Invoice[] }) {
                   </td>
                   <td className="py-1.5 text-slate-700">{entry.description}</td>
                   <td className="py-1.5 text-right text-slate-700">
-                    {entry.debit > 0 ? formatUGX(entry.debit) : "—"}
+                    {entry.debit > 0 ? formatMoney(entry.debit, entry.currency) : "—"}
                   </td>
                   <td className="py-1.5 text-right text-slate-700">
-                    {entry.credit > 0 ? formatUGX(entry.credit) : "—"}
+                    {entry.credit > 0 ? formatMoney(entry.credit, entry.currency) : "—"}
                   </td>
                   <td
                     className={`py-1.5 text-right font-medium ${
                       entry.balance > 0 ? "text-red-700" : "text-slate-900"
                     }`}
                   >
-                    {formatUGX(entry.balance)}
+                    {formatMoney(entry.balance, entry.currency)}
                   </td>
                 </tr>
               ))}

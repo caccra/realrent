@@ -46,7 +46,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const [invoice] = await prisma.$transaction([
     prisma.rentInvoice.create({
-      data: { leaseId: lease.id, periodStart, periodEnd, dueDate, amountDue },
+      data: { leaseId: lease.id, periodStart, periodEnd, dueDate, amountDue, currency: lease.currency },
     }),
     ...(dueRentChange && Number(dueRentChange.newRentAmount) !== Number(lease.rentAmount)
       ? [prisma.lease.update({ where: { id: lease.id }, data: { rentAmount: dueRentChange.newRentAmount } })]

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
 import { unitDetailLine } from "@/lib/unit-details";
 
@@ -11,6 +11,7 @@ type TenantLeaseProperty = {
     bathrooms: number | null;
     otherRooms: string | null;
     rentAmount: unknown;
+    currency: Currency;
     billingCycle: string;
     floor: string | null;
     shopNumber: string | null;
@@ -78,7 +79,7 @@ export function TenantPropertyCard({ lease }: { lease: TenantLeaseProperty }) {
           <p className="text-sm font-medium text-slate-900">Your unit</p>
           <p className="mt-1 text-sm text-slate-600">
             {unit.label} · {unit.bedrooms} {isCommercial ? "room" : "bed"} ·{" "}
-            {formatUGX(String(unit.rentAmount))} / {unit.billingCycle.toLowerCase()}
+            {formatMoney(String(unit.rentAmount), unit.currency)} / {unit.billingCycle.toLowerCase()}
           </p>
           {unitDetailLine(unit) && <p className="mt-1 text-sm text-slate-500">{unitDetailLine(unit)}</p>}
         </div>

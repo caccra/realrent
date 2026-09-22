@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getLandlordFinancialSummary, getLandlordInvoices, getLandlordProperties } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { invoiceDisplayStatus, isInvoiceDueSoon } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
@@ -15,6 +15,12 @@ const STATUS_TONE = {
   OVERDUE: "red",
   PENDING: "slate",
 } as const;
+
+/** Most landlords collect in a single currency; joins the rare mixed case rather than summing raw numbers. */
+function formatByCurrency(entries: { currency: string; amount: number }[]): string {
+  if (entries.length === 0) return formatMoney(0, "UGX");
+  return entries.map((e) => formatMoney(e.amount, e.currency as Currency)).join(" + ");
+}
 
 export default async function LandlordDashboard() {
   const user = await requireUser("LANDLORD");
@@ -33,7 +39,15 @@ export default async function LandlordDashboard() {
   const outstanding = invoices.filter((inv) => invoiceDisplayStatus(inv) !== "PAID");
   const overdue = invoices.filter((inv) => invoiceDisplayStatus(inv) === "OVERDUE");
   const dueSoon = invoices.filter((inv) => isInvoiceDueSoon(inv));
-  const outstandingTotal = outstanding.reduce((sum, inv) => sum + invoiceTotalDue(inv), 0);
+
+  const outstandingByCurrencyMap = new Map<string, number>();
+  for (const inv of outstanding) {
+    outstandingByCurrencyMap.set(inv.currency, (outstandingByCurrencyMap.get(inv.currency) ?? 0) + invoiceTotalDue(inv));
+  }
+  const outstandingByCurrency = Array.from(outstandingByCurrencyMap.entries()).map(([currency, amount]) => ({
+    currency,
+    amount,
+  }));
 
   return (
     <DashboardShell title="Dashboard" userName={user.name ?? ""} nav={LANDLORD_NAV}>
@@ -68,12 +82,12 @@ export default async function LandlordDashboard() {
         <Card>
           <p className="text-sm text-slate-500">Collected this month</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">
-            {formatUGX(financials.collectedThisMonth)}
+            {formatByCurrency(financials.collectedThisMonthByCurrency)}
           </p>
         </Card>
         <Card>
           <p className="text-sm text-slate-500">Outstanding rent</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{formatUGX(outstandingTotal)}</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{formatByCurrency(outstandingByCurrency)}</p>
         </Card>
         <Card>
           <p className="text-sm text-slate-500">Overdue invoices</p>
@@ -82,7 +96,7 @@ export default async function LandlordDashboard() {
       </div>
 
       <p className="mt-2 text-sm text-slate-500">
-        {formatUGX(financials.collectedThisYear)} collected so far this year.
+        {formatByCurrency(financials.collectedThisYearByCurrency)} collected so far this year.
       </p>
 
       {dueSoon.length > 0 && (
@@ -100,7 +114,7 @@ export default async function LandlordDashboard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-medium text-slate-900">{formatUGX(invoiceTotalDue(inv))}</span>
+                    <span className="font-medium text-slate-900">{formatMoney(invoiceTotalDue(inv), inv.currency)}</span>
                     <Link
                       href={`/landlord/leases/${inv.leaseId}`}
                       className="font-medium text-emerald-700 hover:text-emerald-800"
@@ -150,7 +164,7 @@ export default async function LandlordDashboard() {
                     <td className="px-4 py-2 text-slate-600">
                       {new Date(inv.dueDate).toLocaleDateString("en-UG")}
                     </td>
-                    <td className="px-4 py-2 text-slate-900">{formatUGX(invoiceTotalDue(inv))}</td>
+                    <td className="px-4 py-2 text-slate-900">{formatMoney(invoiceTotalDue(inv), inv.currency)}</td>
                     <td className="px-4 py-2">
                       <Badge tone={STATUS_TONE[status]}>{status}</Badge>
                     </td>

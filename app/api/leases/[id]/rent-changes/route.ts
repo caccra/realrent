@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rentChangeSchema } from "@/lib/validations/rent-change";
 import { canManageProperty } from "@/lib/authorization";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -51,8 +51,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       userId: lease.tenantId,
       type: "RENT_INCREASE",
       title: "Rent change scheduled",
-      message: `Rent for ${lease.unit.property.name} — ${lease.unit.label} will change to ${formatUGX(
-        parsed.data.newRentAmount
+      message: `Rent for ${lease.unit.property.name} — ${lease.unit.label} will change to ${formatMoney(
+        parsed.data.newRentAmount,
+        lease.currency
       )} starting ${effectiveDate.toLocaleDateString("en-UG")}`,
       link: "/tenant/dashboard",
     },

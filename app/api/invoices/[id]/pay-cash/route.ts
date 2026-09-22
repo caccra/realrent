@@ -54,6 +54,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         amount: parsed.data.amount,
         method: "CASH",
         status: "SUCCESSFUL",
+        currency: invoice.currency,
       },
     });
 

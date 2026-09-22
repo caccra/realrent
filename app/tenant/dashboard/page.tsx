@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getTenantActiveLeases, getTenantDocuments, getTenantStats } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { invoiceDisplayStatus } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { PaymentMethodsDisplay } from "@/components/payment-methods-display";
@@ -30,6 +30,12 @@ const COMPLAINT_STATUS_TONE = {
   RESOLVED: "green",
 } as const;
 
+/** Most balances are in a single currency; joins the rare mixed case rather than summing raw numbers. */
+function formatByCurrency(entries: { currency: string; amount: number }[]): string {
+  if (entries.length === 0) return formatMoney(0, "UGX");
+  return entries.map((e) => formatMoney(e.amount, e.currency as Currency)).join(" + ");
+}
+
 export default async function TenantDashboard() {
   const user = await requireUser("TENANT");
   const [leases, stats, documents] = await Promise.all([
@@ -44,9 +50,9 @@ export default async function TenantDashboard() {
         <Card>
           <p className="text-sm text-slate-500">Outstanding balance</p>
           <p
-            className={`mt-1 text-2xl font-semibold ${stats.outstandingBalance > 0 ? "text-red-700" : "text-slate-900"}`}
+            className={`mt-1 text-2xl font-semibold ${stats.outstandingByCurrency.length > 0 ? "text-red-700" : "text-slate-900"}`}
           >
-            {formatUGX(stats.outstandingBalance)}
+            {formatByCurrency(stats.outstandingByCurrency)}
           </p>
         </Card>
         <Card>
@@ -54,7 +60,7 @@ export default async function TenantDashboard() {
           {stats.nextDue ? (
             <>
               <p className="mt-1 text-2xl font-semibold text-slate-900">
-                {formatUGX(stats.nextDue.amount)}
+                {formatMoney(stats.nextDue.amount, stats.nextDue.currency as Currency)}
               </p>
               <p className="text-sm text-slate-500">
                 {stats.nextDue.propertyLabel} · due{" "}
@@ -67,7 +73,7 @@ export default async function TenantDashboard() {
         </Card>
         <Card>
           <p className="text-sm text-slate-500">Total paid</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{formatUGX(stats.totalPaid)}</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{formatByCurrency(stats.totalPaidByCurrency)}</p>
         </Card>
       </div>
 
@@ -128,7 +134,7 @@ export default async function TenantDashboard() {
                     .filter((rc) => new Date(rc.effectiveDate) > new Date())
                     .map((rc) => (
                       <p key={rc.id} className="text-sm text-amber-900">
-                        Rent will change to {formatUGX(rc.newRentAmount.toString())} starting{" "}
+                        Rent will change to {formatMoney(rc.newRentAmount.toString(), lease.currency)} starting{" "}
                         {new Date(rc.effectiveDate).toLocaleDateString("en-UG")}
                         {rc.note && ` — ${rc.note}`}
                       </p>
@@ -170,9 +176,9 @@ export default async function TenantDashboard() {
                           </p>
                           <p className="text-sm text-slate-500">
                             Due {new Date(invoice.dueDate).toLocaleDateString("en-UG")} ·{" "}
-                            {formatUGX(totalDue)}
-                            {hasLateFee && ` (incl. ${formatUGX(invoice.lateFeeAmount.toString())} late fee)`}
-                            {remaining > 0 && paid > 0 && ` · ${formatUGX(remaining)} remaining`}
+                            {formatMoney(totalDue, invoice.currency)}
+                            {hasLateFee && ` (incl. ${formatMoney(invoice.lateFeeAmount.toString(), invoice.currency)} late fee)`}
+                            {remaining > 0 && paid > 0 && ` · ${formatMoney(remaining, invoice.currency)} remaining`}
                           </p>
                         </div>
                         <Badge tone={STATUS_TONE[status]}>{status}</Badge>

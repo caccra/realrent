@@ -6,9 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { endLeaseSchema, type EndLeaseFormInput, type EndLeaseInput } from "@/lib/validations/lease";
 import { Button, Input, Label, SecondaryButton, Textarea } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 
-export function EndLeaseButton({ leaseId, depositAmount }: { leaseId: string; depositAmount: number }) {
+export function EndLeaseButton({
+  leaseId,
+  depositAmount,
+  currency,
+}: {
+  leaseId: string;
+  depositAmount: number;
+  currency: Currency;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -57,17 +65,17 @@ export function EndLeaseButton({ leaseId, depositAmount }: { leaseId: string; de
   return (
     <div className="rounded-md border border-red-200 bg-red-50 p-4">
       <p className="mb-3 text-sm font-medium text-slate-900">
-        End this lease and settle the security deposit ({formatUGX(depositAmount)})
+        End this lease and settle the security deposit ({formatMoney(depositAmount, currency)})
       </p>
       <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="depositDeductions">Deductions (UGX)</Label>
+            <Label htmlFor="depositDeductions">Deductions ({currency})</Label>
             <Input id="depositDeductions" type="number" min={0} {...register("depositDeductions")} />
           </div>
           <div>
             <Label>Refund due</Label>
-            <p className="mt-2 text-sm font-medium text-slate-900">{formatUGX(refundAmount)}</p>
+            <p className="mt-2 text-sm font-medium text-slate-900">{formatMoney(refundAmount, currency)}</p>
           </div>
         </div>
         <div>

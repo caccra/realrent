@@ -44,6 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         startDate,
         rentAmount: parsed.data.rentAmount,
         depositAmount: parsed.data.depositAmount,
+        currency: unit.currency,
         status: "ACTIVE",
       },
     });
@@ -57,6 +58,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         periodEnd,
         dueDate,
         amountDue: parsed.data.rentAmount,
+        currency: unit.currency,
       },
     });
 

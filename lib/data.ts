@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma, PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
+import type { Currency, Prisma, PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 
 export type PublicPropertyFilters = {
@@ -100,8 +100,8 @@ export async function getAdminOverviewStats() {
     totalProperties,
     salePropertyCount,
     activeLeaseCount,
-    revenueAgg,
-    monthRevenueAgg,
+    revenueByCurrency,
+    monthRevenueByCurrency,
     openComplaintCount,
     openMaintenanceCount,
     recentUsers,
@@ -110,8 +110,9 @@ export async function getAdminOverviewStats() {
     prisma.property.count(),
     prisma.property.count({ where: { listingType: "SALE" } }),
     prisma.lease.count({ where: { status: "ACTIVE" } }),
-    prisma.payment.aggregate({ where: { status: "SUCCESSFUL" }, _sum: { amount: true } }),
-    prisma.payment.aggregate({
+    prisma.payment.groupBy({ by: ["currency"], where: { status: "SUCCESSFUL" }, _sum: { amount: true } }),
+    prisma.payment.groupBy({
+      by: ["currency"],
       where: { status: "SUCCESSFUL", paidAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
       _sum: { amount: true },
     }),
@@ -132,8 +133,11 @@ export async function getAdminOverviewStats() {
     rentalPropertyCount: totalProperties - salePropertyCount,
     salePropertyCount,
     activeLeaseCount,
-    totalRevenue: Number(revenueAgg._sum.amount ?? 0),
-    revenueThisMonth: Number(monthRevenueAgg._sum.amount ?? 0),
+    totalRevenueByCurrency: revenueByCurrency.map((r) => ({ currency: r.currency, amount: Number(r._sum.amount ?? 0) })),
+    revenueThisMonthByCurrency: monthRevenueByCurrency.map((r) => ({
+      currency: r.currency,
+      amount: Number(r._sum.amount ?? 0),
+    })),
     openComplaintCount,
     openMaintenanceCount,
     recentUsers,
@@ -297,7 +301,8 @@ export async function getLandlordFinancialSummary(landlordId: string) {
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
   const [monthAgg, yearAgg] = await Promise.all([
-    prisma.payment.aggregate({
+    prisma.payment.groupBy({
+      by: ["currency"],
       where: {
         status: "SUCCESSFUL",
         paidAt: { gte: startOfMonth },
@@ -305,7 +310,8 @@ export async function getLandlordFinancialSummary(landlordId: string) {
       },
       _sum: { amount: true },
     }),
-    prisma.payment.aggregate({
+    prisma.payment.groupBy({
+      by: ["currency"],
       where: {
         status: "SUCCESSFUL",
         paidAt: { gte: startOfYear },
@@ -316,8 +322,8 @@ export async function getLandlordFinancialSummary(landlordId: string) {
   ]);
 
   return {
-    collectedThisMonth: Number(monthAgg._sum.amount ?? 0),
-    collectedThisYear: Number(yearAgg._sum.amount ?? 0),
+    collectedThisMonthByCurrency: monthAgg.map((g) => ({ currency: g.currency, amount: Number(g._sum.amount ?? 0) })),
+    collectedThisYearByCurrency: yearAgg.map((g) => ({ currency: g.currency, amount: Number(g._sum.amount ?? 0) })),
   };
 }
 
@@ -381,7 +387,10 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
     include: { payments: true, lease: { include: { tenant: true, unit: true } } },
   });
 
-  const expectedRent = invoices.reduce((sum, inv) => sum + invoiceTotalDue(inv), 0);
+  const expectedByCurrency = new Map<string, number>();
+  for (const inv of invoices) {
+    expectedByCurrency.set(inv.currency, (expectedByCurrency.get(inv.currency) ?? 0) + invoiceTotalDue(inv));
+  }
 
   const payments = await prisma.payment.findMany({
     where: {
@@ -391,7 +400,10 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
     },
     include: { invoice: { include: { lease: { include: { tenant: true, unit: true } } } } },
   });
-  const collected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const collectedByCurrency = new Map<string, number>();
+  for (const p of payments) {
+    collectedByCurrency.set(p.currency, (collectedByCurrency.get(p.currency) ?? 0) + Number(p.amount));
+  }
 
   const maintenance = await prisma.maintenanceRequest.findMany({
     where: {
@@ -401,17 +413,39 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
       cost: { not: null },
     },
   });
+  // Maintenance costs are tracked in UGX only for now; only subtracted from the UGX net income figure.
   const maintenanceCost = maintenance.reduce((sum, m) => sum + Number(m.cost ?? 0), 0);
+
+  const currencies = new Set([...expectedByCurrency.keys(), ...collectedByCurrency.keys(), "UGX"]);
+  const byCurrency = (map: Map<string, number>) =>
+    Array.from(currencies)
+      .map((currency) => ({ currency, amount: map.get(currency) ?? 0 }))
+      .filter((e) => e.amount !== 0 || e.currency === "UGX");
+
+  const expectedRentByCurrency = byCurrency(expectedByCurrency);
+  const collectedByCurrencyList = byCurrency(collectedByCurrency);
+  const outstandingByCurrency = Array.from(currencies)
+    .map((currency) => ({
+      currency,
+      amount: Math.max((expectedByCurrency.get(currency) ?? 0) - (collectedByCurrency.get(currency) ?? 0), 0),
+    }))
+    .filter((e) => e.amount !== 0 || e.currency === "UGX");
+  const netIncomeByCurrency = Array.from(currencies)
+    .map((currency) => ({
+      currency,
+      amount: (collectedByCurrency.get(currency) ?? 0) - (currency === "UGX" ? maintenanceCost : 0),
+    }))
+    .filter((e) => e.amount !== 0 || e.currency === "UGX");
 
   return {
     property,
     periodStart: start,
     periodEnd: end,
-    expectedRent,
-    collected,
-    outstanding: Math.max(expectedRent - collected, 0),
+    expectedRentByCurrency,
+    collectedByCurrency: collectedByCurrencyList,
+    outstandingByCurrency,
     maintenanceCost,
-    netIncome: collected - maintenanceCost,
+    netIncomeByCurrency,
     invoices,
     payments,
     maintenance,
@@ -455,21 +489,37 @@ export async function getLandlordAnalytics(landlordId: string) {
       paidAt: { gte: months[0].start },
       invoice: { lease: { unit: { property: { landlordId } } } },
     },
-    select: { amount: true, paidAt: true, method: true },
+    select: { amount: true, paidAt: true, method: true, currency: true },
   });
 
-  const byMethodMap = new Map<string, number>();
+  // A landlord's payments are overwhelmingly in one currency in practice, so
+  // the trend chart and method breakdown focus on whichever currency has the
+  // most collected volume; any other currency present is called out
+  // separately rather than silently summed into the wrong total.
+  const volumeByCurrency = new Map<string, number>();
   for (const p of payments) {
+    volumeByCurrency.set(p.currency, (volumeByCurrency.get(p.currency) ?? 0) + Number(p.amount));
+  }
+  const primaryCurrency = (Array.from(volumeByCurrency.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ??
+    "UGX") as Currency;
+  const otherCurrencyTotals = Array.from(volumeByCurrency.entries())
+    .filter(([currency]) => currency !== primaryCurrency)
+    .map(([currency, amount]) => ({ currency, amount }));
+
+  const primaryPayments = payments.filter((p) => p.currency === primaryCurrency);
+
+  const byMethodMap = new Map<string, number>();
+  for (const p of primaryPayments) {
     byMethodMap.set(p.method, (byMethodMap.get(p.method) ?? 0) + Number(p.amount));
   }
-  const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalCollected = primaryPayments.reduce((sum, p) => sum + Number(p.amount), 0);
   const byMethod = Array.from(byMethodMap.entries())
     .map(([method, amount]) => ({ method, amount, share: totalCollected > 0 ? amount / totalCollected : 0 }))
     .sort((a, b) => b.amount - a.amount);
 
   const trend = months.map(({ label, start, end }) => ({
     label,
-    amount: payments
+    amount: primaryPayments
       .filter((p) => p.paidAt >= start && p.paidAt < end)
       .reduce((sum, p) => sum + Number(p.amount), 0),
   }));
@@ -483,22 +533,25 @@ export async function getLandlordAnalytics(landlordId: string) {
     orderBy: { dueDate: "asc" },
   });
 
-  let totalArrears = 0;
+  const totalArrearsByCurrencyMap = new Map<string, number>();
   const arrearsByTenant = new Map<
     string,
-    { tenantId: string; tenantName: string; propertyLabel: string; amount: number; oldestDueDate: Date }
+    { tenantId: string; tenantName: string; propertyLabel: string; amount: number; currency: string; oldestDueDate: Date }
   >();
   for (const inv of openInvoices) {
     const paid = inv.payments.reduce((sum, p) => sum + Number(p.amount), 0);
     const remaining = invoiceTotalDue(inv) - paid;
     if (remaining <= 0) continue;
-    totalArrears += remaining;
-    const key = inv.lease.tenantId;
+    totalArrearsByCurrencyMap.set(inv.currency, (totalArrearsByCurrencyMap.get(inv.currency) ?? 0) + remaining);
+    // Keyed by tenant + currency: a tenant with unpaid leases in two
+    // currencies shows as two rows rather than an incorrectly summed one.
+    const key = `${inv.lease.tenantId}:${inv.currency}`;
     const entry = arrearsByTenant.get(key) ?? {
       tenantId: inv.lease.tenantId,
       tenantName: inv.lease.tenant.name,
       propertyLabel: `${inv.lease.unit.property.name} — ${inv.lease.unit.label}`,
       amount: 0,
+      currency: inv.currency,
       oldestDueDate: inv.dueDate,
     };
     entry.amount += remaining;
@@ -512,8 +565,13 @@ export async function getLandlordAnalytics(landlordId: string) {
     occupancyRate,
     byProperty: Array.from(byPropertyMap.values()),
     trend,
+    primaryCurrency,
+    otherCurrencyTotals,
     byMethod,
-    totalArrears,
+    totalArrearsByCurrency: Array.from(totalArrearsByCurrencyMap.entries()).map(([currency, amount]) => ({
+      currency,
+      amount,
+    })),
     arrears: Array.from(arrearsByTenant.values()).sort((a, b) => b.amount - a.amount),
   };
 }
@@ -741,10 +799,10 @@ export function getTenantDocuments(tenantId: string) {
 }
 
 export async function getTenantStats(tenantId: string) {
-  const [paidAgg, openInvoices] = await Promise.all([
-    prisma.payment.aggregate({
+  const [payments, openInvoices] = await Promise.all([
+    prisma.payment.findMany({
       where: { status: "SUCCESSFUL", invoice: { lease: { tenantId } } },
-      _sum: { amount: true },
+      select: { amount: true, currency: true },
     }),
     prisma.rentInvoice.findMany({
       where: { lease: { tenantId, status: "ACTIVE" }, status: { not: "PAID" } },
@@ -756,27 +814,41 @@ export async function getTenantStats(tenantId: string) {
     }),
   ]);
 
-  let outstandingBalance = 0;
-  let nextDue: { amount: number; dueDate: Date; propertyLabel: string } | null = null;
+  // A tenant could in principle hold leases in more than one currency, so
+  // totals are grouped by currency rather than naively summed together.
+  const totalPaidByCurrency = new Map<string, number>();
+  for (const p of payments) {
+    totalPaidByCurrency.set(p.currency, (totalPaidByCurrency.get(p.currency) ?? 0) + Number(p.amount));
+  }
+
+  const outstandingByCurrency = new Map<string, number>();
+  let nextDue: { amount: number; dueDate: Date; propertyLabel: string; currency: string } | null = null;
 
   for (const invoice of openInvoices) {
     const paid = invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0);
     const remaining = invoiceTotalDue(invoice) - paid;
     if (remaining <= 0) continue;
 
-    outstandingBalance += remaining;
+    outstandingByCurrency.set(invoice.currency, (outstandingByCurrency.get(invoice.currency) ?? 0) + remaining);
     if (!nextDue || invoice.dueDate < nextDue.dueDate) {
       nextDue = {
         amount: remaining,
         dueDate: invoice.dueDate,
         propertyLabel: `${invoice.lease.unit.property.name} — ${invoice.lease.unit.label}`,
+        currency: invoice.currency,
       };
     }
   }
 
   return {
-    totalPaid: Number(paidAgg._sum.amount ?? 0),
-    outstandingBalance,
+    totalPaidByCurrency: Array.from(totalPaidByCurrency.entries()).map(([currency, amount]) => ({
+      currency,
+      amount,
+    })),
+    outstandingByCurrency: Array.from(outstandingByCurrency.entries()).map(([currency, amount]) => ({
+      currency,
+      amount,
+    })),
     nextDue,
   };
 }

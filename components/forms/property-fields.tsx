@@ -6,6 +6,7 @@ import {
   RESIDENTIAL_PROPERTY_TYPES,
   PROPERTY_USAGES,
   PROPERTY_LISTING_TYPES,
+  CURRENCIES,
   type PropertyFormInput,
 } from "@/lib/validations/property";
 import { FieldError, Input, Label, Select, Textarea } from "@/components/ui";
@@ -41,8 +42,17 @@ export function PropertyFields({
       {isSale && (
         <div className="grid grid-cols-1 gap-4 rounded-md border border-slate-200 p-4 sm:grid-cols-3">
           <div>
-            <Label htmlFor="salePrice">Sale price (UGX)</Label>
-            <Input id="salePrice" type="number" min={0} {...register("salePrice")} />
+            <Label htmlFor="salePrice">Sale price</Label>
+            <div className="flex gap-2">
+              <Input id="salePrice" type="number" min={0} {...register("salePrice")} />
+              <Select className="w-24 shrink-0" {...register("saleCurrency")}>
+                {CURRENCIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
             <FieldError message={errors.salePrice?.message} />
           </div>
           <div>

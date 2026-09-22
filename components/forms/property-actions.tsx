@@ -30,6 +30,7 @@ export function PropertyActions({
             amenities: property.amenities,
             listingType: property.listingType,
             salePrice: property.salePrice,
+            saleCurrency: property.saleCurrency,
             saleBedrooms: property.saleBedrooms,
             saleBathrooms: property.saleBathrooms,
           }}

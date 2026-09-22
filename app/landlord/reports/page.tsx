@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getLandlordAnalytics } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -11,6 +11,12 @@ const METHOD_LABELS: Record<string, string> = {
   MOBILE_MONEY: "Mobile Money",
   BANK: "Bank transfer",
 };
+
+/** Most landlords collect in a single currency; joins the rare mixed case rather than summing raw numbers. */
+function formatByCurrency(entries: { currency: string; amount: number }[]): string {
+  if (entries.length === 0) return formatMoney(0, "UGX");
+  return entries.map((e) => formatMoney(e.amount, e.currency as Currency)).join(" + ");
+}
 
 export default async function ReportsPage() {
   const user = await requireUser("LANDLORD");
@@ -50,12 +56,14 @@ export default async function ReportsPage() {
         <Card>
           <p className="text-xs font-medium text-slate-500">Collected this month</p>
           <p className="mt-1 text-2xl font-semibold text-emerald-700">
-            {formatUGX(analytics.trend[analytics.trend.length - 1]?.amount ?? 0)}
+            {formatMoney(analytics.trend[analytics.trend.length - 1]?.amount ?? 0, analytics.primaryCurrency)}
           </p>
         </Card>
         <Card>
           <p className="text-xs font-medium text-slate-500">Total arrears</p>
-          <p className="mt-1 text-2xl font-semibold text-red-700">{formatUGX(analytics.totalArrears)}</p>
+          <p className="mt-1 text-2xl font-semibold text-red-700">
+            {formatByCurrency(analytics.totalArrearsByCurrency)}
+          </p>
           <p className="mt-1 text-xs text-slate-400">
             {analytics.arrears.length} tenant{analytics.arrears.length === 1 ? "" : "s"} behind
           </p>
@@ -63,7 +71,13 @@ export default async function ReportsPage() {
       </div>
 
       <Card className="mt-6">
-        <h2 className="mb-4 text-sm font-medium text-slate-900">Collections — last 6 months</h2>
+        <h2 className="mb-1 text-sm font-medium text-slate-900">Collections — last 6 months</h2>
+        <p className="mb-4 text-xs text-slate-400">
+          Shown in {analytics.primaryCurrency}, your primary collection currency.
+          {analytics.otherCurrencyTotals.length > 0 && (
+            <> Also collected: {formatByCurrency(analytics.otherCurrencyTotals)}.</>
+          )}
+        </p>
         <div className="flex items-end gap-3" style={{ height: 140 }}>
           {analytics.trend.map((t) => (
             <div key={t.label} className="flex flex-1 flex-col items-center gap-1">
@@ -71,7 +85,7 @@ export default async function ReportsPage() {
                 <div
                   className="w-full rounded-t bg-emerald-600"
                   style={{ height: `${Math.max(4, (t.amount / maxTrend) * 100)}%` }}
-                  title={formatUGX(t.amount)}
+                  title={formatMoney(t.amount, analytics.primaryCurrency)}
                 />
               </div>
               <span className="text-xs text-slate-500">{t.label}</span>
@@ -91,7 +105,7 @@ export default async function ReportsPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-700">{METHOD_LABELS[m.method] ?? m.method}</span>
                   <span className="text-slate-500">
-                    {formatUGX(m.amount)} ({(m.share * 100).toFixed(0)}%)
+                    {formatMoney(m.amount, analytics.primaryCurrency)} ({(m.share * 100).toFixed(0)}%)
                   </span>
                 </div>
                 <div className="mt-1 h-2 w-full rounded-full bg-slate-100">
@@ -145,13 +159,15 @@ export default async function ReportsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {analytics.arrears.map((a) => (
-                <tr key={a.tenantId}>
+                <tr key={`${a.tenantId}:${a.currency}`}>
                   <td className="py-2 text-slate-900">{a.tenantName}</td>
                   <td className="py-2 text-slate-600">{a.propertyLabel}</td>
                   <td className="py-2 text-slate-600">
                     {new Date(a.oldestDueDate).toLocaleDateString("en-UG")}
                   </td>
-                  <td className="py-2 text-right font-medium text-red-700">{formatUGX(a.amount)}</td>
+                  <td className="py-2 text-right font-medium text-red-700">
+                    {formatMoney(a.amount, a.currency as Currency)}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { invoiceDisplayStatus } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { SendReminderButton } from "@/components/forms/send-reminder-button";
@@ -72,7 +72,7 @@ export function PaymentStatusOverview({ leases, leaseHrefPrefix }: { leases: Lea
                 <Badge tone={STATUS_TONE[status]}>{status}</Badge>
               </td>
               <td className={`px-4 py-2 ${remaining > 0 ? "text-red-700" : "text-slate-600"}`}>
-                {formatUGX(Math.max(remaining, 0))}
+                {formatMoney(Math.max(remaining, 0), invoice.currency)}
               </td>
               <td className="px-4 py-2">
                 {status !== "PAID" && <SendReminderButton invoiceId={invoice.id} />}

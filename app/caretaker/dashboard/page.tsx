@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getCaretakerAssignments } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { CARETAKER_NAV } from "@/lib/caretaker-nav";
 
 export default async function CaretakerDashboard() {
@@ -37,7 +37,7 @@ export default async function CaretakerDashboard() {
                         <div>
                           <p className="font-medium text-slate-900">{unit.label}</p>
                           <p className="text-sm text-slate-500">
-                            {formatUGX(unit.rentAmount.toString())} / {unit.billingCycle.toLowerCase()}
+                            {formatMoney(unit.rentAmount.toString(), unit.currency)} / {unit.billingCycle.toLowerCase()}
                           </p>
                         </div>
                         <Badge tone={unit.status === "OCCUPIED" ? "green" : "slate"}>{unit.status}</Badge>

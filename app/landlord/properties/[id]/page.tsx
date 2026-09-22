@@ -11,7 +11,7 @@ import { UnitActions } from "@/components/forms/unit-actions";
 import { PropertyPhotos } from "@/components/forms/property-photos";
 import { CaretakerSection } from "@/components/forms/caretaker-section";
 import { LateFeePolicyForm } from "@/components/forms/late-fee-policy-form";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { unitDetailLine } from "@/lib/unit-details";
@@ -79,7 +79,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
       </div>
       {isSale && (
         <p className="mb-2 text-lg font-semibold text-slate-900">
-          {formatUGX(property.salePrice?.toString() ?? "0")}
+          {formatMoney(property.salePrice?.toString() ?? "0", property.saleCurrency)}
           {(property.saleBedrooms != null || property.saleBathrooms != null) && (
             <span className="ml-2 text-sm font-normal text-slate-500">
               {property.saleBedrooms != null && `${property.saleBedrooms} bed`}
@@ -121,6 +121,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           amenities: property.amenities,
           listingType: property.listingType,
           salePrice: property.salePrice != null ? Number(property.salePrice) : undefined,
+          saleCurrency: property.saleCurrency,
           saleBedrooms: property.saleBedrooms ?? undefined,
           saleBathrooms: property.saleBathrooms ?? undefined,
         }}
@@ -189,7 +190,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                       {unit.label} · {unit.bedrooms} {isCommercial ? "room" : "bed"}
                     </h3>
                     <p className="text-sm text-slate-500">
-                      {formatUGX(unit.rentAmount.toString())} / {unit.billingCycle.toLowerCase()}
+                      {formatMoney(unit.rentAmount.toString(), unit.currency)} / {unit.billingCycle.toLowerCase()}
                     </p>
                     {detailLine && <p className="mt-1 text-sm text-slate-500">{detailLine}</p>}
                   </div>
@@ -220,6 +221,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                     bathrooms: unit.bathrooms ?? undefined,
                     otherRooms: unit.otherRooms ?? "",
                     rentAmount: Number(unit.rentAmount),
+                    currency: unit.currency,
                     billingCycle: unit.billingCycle,
                     floor: unit.floor ?? "",
                     shopNumber: unit.shopNumber ?? "",

@@ -7,7 +7,7 @@ import { getPropertyReviews, getPublicPropertyDetail, incrementPropertyView } fr
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
 import { PaymentMethodsDisplay } from "@/components/payment-methods-display";
 import { StarRating } from "@/components/star-rating";
@@ -77,7 +77,7 @@ export default async function PublicPropertyDetailPage({
 
         {isSale && (
           <p className="mt-2 text-2xl font-semibold text-emerald-700">
-            {formatUGX(property.salePrice?.toString() ?? "0")}
+            {formatMoney(property.salePrice?.toString() ?? "0", property.saleCurrency)}
             {(property.saleBedrooms != null || property.saleBathrooms != null) && (
               <span className="ml-2 text-base font-normal text-slate-500">
                 {property.saleBedrooms != null && `${property.saleBedrooms} bed`}
@@ -131,7 +131,7 @@ export default async function PublicPropertyDetailPage({
                         {unit.label} · {unit.bedrooms} {isCommercial ? "room" : "bed"}
                       </p>
                       <p className="text-sm text-slate-500">
-                        {formatUGX(unit.rentAmount.toString())} / {unit.billingCycle.toLowerCase()}
+                        {formatMoney(unit.rentAmount.toString(), unit.currency)} / {unit.billingCycle.toLowerCase()}
                       </p>
                       {detailLine && <p className="mt-1 text-sm text-slate-500">{detailLine}</p>}
                     </div>

@@ -10,7 +10,7 @@ import {
   type RentChangeInput,
 } from "@/lib/validations/rent-change";
 import { Button, Card, FieldError, Input, Label, SecondaryButton } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 
 type RentChangeItem = {
   id: string;
@@ -22,9 +22,11 @@ type RentChangeItem = {
 export function RentChangeSection({
   leaseId,
   rentChanges,
+  currency,
 }: {
   leaseId: string;
   rentChanges: RentChangeItem[];
+  currency: Currency;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -87,7 +89,7 @@ export function RentChangeSection({
         <form className="mb-4 space-y-3" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="newRentAmount">New rent amount (UGX)</Label>
+              <Label htmlFor="newRentAmount">New rent amount ({currency})</Label>
               <Input id="newRentAmount" type="number" min={0} {...register("newRentAmount")} />
               <FieldError message={errors.newRentAmount?.message} />
             </div>
@@ -123,7 +125,7 @@ export function RentChangeSection({
             return (
               <li key={rc.id} className="flex items-center justify-between">
                 <span className="text-slate-700">
-                  {formatUGX(rc.newRentAmount.toString())} from{" "}
+                  {formatMoney(rc.newRentAmount.toString(), currency)} from{" "}
                   {new Date(rc.effectiveDate).toLocaleDateString("en-UG")}
                   {rc.note && ` · ${rc.note}`}
                   {isFuture && <span className="ml-2 text-emerald-700">(upcoming)</span>}

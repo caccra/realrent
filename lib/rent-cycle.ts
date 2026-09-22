@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { nextInvoicePeriod } from "@/lib/invoicing";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import type { Prisma } from "@prisma/client";
 
 const DUE_SOON_DAYS = 3;
@@ -30,7 +30,9 @@ export async function runRentCycle() {
     const amountDue = dueRentChange ? dueRentChange.newRentAmount : lease.rentAmount;
 
     await prisma.$transaction([
-      prisma.rentInvoice.create({ data: { leaseId: lease.id, periodStart, periodEnd, dueDate, amountDue } }),
+      prisma.rentInvoice.create({
+        data: { leaseId: lease.id, periodStart, periodEnd, dueDate, amountDue, currency: lease.currency },
+      }),
       ...(dueRentChange && Number(dueRentChange.newRentAmount) !== Number(lease.rentAmount)
         ? [prisma.lease.update({ where: { id: lease.id }, data: { rentAmount: dueRentChange.newRentAmount } })]
         : []),
@@ -87,8 +89,9 @@ export async function runRentCycle() {
               title: "Rent overdue",
               message:
                 appliedFee != null
-                  ? `Your rent for ${property.name} — ${inv.lease.unit.label} is overdue. A late fee of ${formatUGX(
-                      appliedFee
+                  ? `Your rent for ${property.name} — ${inv.lease.unit.label} is overdue. A late fee of ${formatMoney(
+                      appliedFee,
+                      inv.currency
                     )} has been applied.`
                   : `Your rent for ${property.name} — ${inv.lease.unit.label} is overdue.`,
               link: tenantLink,
@@ -137,7 +140,7 @@ export async function runRentCycle() {
         userId: inv.lease.tenantId,
         type: "RENT_DUE_SOON",
         title: "Rent due soon",
-        message: `Rent of ${formatUGX(inv.amountDue)} for ${property.name} — ${inv.lease.unit.label} is due ${inv.dueDate.toLocaleDateString(
+        message: `Rent of ${formatMoney(inv.amountDue, inv.currency)} for ${property.name} — ${inv.lease.unit.label} is due ${inv.dueDate.toLocaleDateString(
           "en-UG"
         )}.`,
         link,

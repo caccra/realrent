@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       amenities: parsed.data.amenities,
       listingType: parsed.data.listingType,
       salePrice: parsed.data.listingType === "SALE" ? parsed.data.salePrice : null,
+      saleCurrency: parsed.data.saleCurrency,
       saleBedrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBedrooms ?? null : null,
       saleBathrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBathrooms ?? null : null,
     },

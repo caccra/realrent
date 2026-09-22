@@ -4,7 +4,7 @@ import { getPropertyReviewSummaries, getPublicProperties } from "@/lib/data";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES, PROPERTY_LISTING_TYPES } from "@/lib/validations/property";
 import { PropertyFilterBar } from "@/components/property-filter-bar";
 import { StarRating } from "@/components/star-rating";
@@ -135,7 +135,7 @@ export default async function PublicPropertiesPage({
                       {isSale ? (
                         <>
                           <p className="mt-3 text-sm font-medium text-emerald-700">
-                            {formatUGX(property.salePrice?.toString() ?? "0")}
+                            {formatMoney(property.salePrice?.toString() ?? "0", property.saleCurrency)}
                           </p>
                           {(property.saleBedrooms != null || property.saleBathrooms != null) && (
                             <p className="mt-1 text-sm text-slate-500">
@@ -149,7 +149,7 @@ export default async function PublicPropertiesPage({
                         cheapest && (
                           <>
                             <p className="mt-3 text-sm font-medium text-emerald-700">
-                              From {formatUGX(cheapest.rentAmount.toString())} /{" "}
+                              From {formatMoney(cheapest.rentAmount.toString(), cheapest.currency)} /{" "}
                               {cheapest.billingCycle.toLowerCase()}
                             </p>
                             {unitLine && <p className="mt-1 text-sm text-slate-500">{unitLine}</p>}

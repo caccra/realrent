@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { canManageProperty } from "@/lib/authorization";
 import { invoiceDisplayStatus } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 
 const COOLDOWN_HOURS = 12;
 
@@ -56,7 +56,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       userId: invoice.lease.tenantId,
       type: status === "OVERDUE" ? "RENT_OVERDUE" : "RENT_DUE_SOON",
       title: "Rent payment reminder",
-      message: `Reminder: ${formatUGX(remaining)} is ${
+      message: `Reminder: ${formatMoney(remaining, invoice.currency)} is ${
         status === "OVERDUE" ? "overdue" : `due ${invoice.dueDate.toLocaleDateString("en-UG")}`
       } for ${property.name} — ${invoice.lease.unit.label}.`,
       link,

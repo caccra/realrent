@@ -3,8 +3,14 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { getPropertyMonthlyStatement } from "@/lib/data";
 import { Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { PrintButton } from "@/components/print-button";
+
+/** Most properties collect a single currency; joins the rare mixed case rather than summing raw numbers. */
+function formatByCurrency(entries: { currency: string; amount: number }[]): string {
+  if (entries.length === 0) return formatMoney(0, "UGX");
+  return entries.map((e) => formatMoney(e.amount, e.currency as Currency)).join(" + ");
+}
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -68,20 +74,26 @@ export default async function PropertyStatementPage({
 
         <div className="mt-6 border-t border-slate-100 pt-4">
           <h2 className="mb-2 text-sm font-medium text-slate-900">Income</h2>
-          <Row label="Expected rent" value={formatUGX(statement.expectedRent)} />
-          <Row label="Collected" value={formatUGX(statement.collected)} />
-          <Row label="Outstanding" value={formatUGX(statement.outstanding)} tone={statement.outstanding > 0 ? "red" : undefined} />
+          <Row label="Expected rent" value={formatByCurrency(statement.expectedRentByCurrency)} />
+          <Row label="Collected" value={formatByCurrency(statement.collectedByCurrency)} />
+          <Row
+            label="Outstanding"
+            value={formatByCurrency(statement.outstandingByCurrency)}
+            tone={statement.outstandingByCurrency.some((e) => e.amount > 0) ? "red" : undefined}
+          />
         </div>
 
         <div className="mt-4 border-t border-slate-100 pt-4">
           <h2 className="mb-2 text-sm font-medium text-slate-900">Expenses</h2>
-          <Row label="Maintenance" value={formatUGX(statement.maintenanceCost)} />
+          <Row label="Maintenance (UGX)" value={formatMoney(statement.maintenanceCost, "UGX")} />
         </div>
 
         <div className="mt-4 border-t border-slate-200 pt-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-900">Net income</span>
-            <span className="text-xl font-semibold text-emerald-700">{formatUGX(statement.netIncome)}</span>
+            <span className="text-xl font-semibold text-emerald-700">
+              {formatByCurrency(statement.netIncomeByCurrency)}
+            </span>
           </div>
         </div>
       </Card>
@@ -104,7 +116,9 @@ export default async function PropertyStatementPage({
                   <td className="py-1.5 text-slate-500">{new Date(p.paidAt).toLocaleDateString("en-UG")}</td>
                   <td className="py-1.5 text-slate-700">{p.invoice.lease.tenant.name}</td>
                   <td className="py-1.5 text-slate-700">{p.invoice.lease.unit.label}</td>
-                  <td className="py-1.5 text-right text-slate-900">{formatUGX(p.amount.toString())}</td>
+                  <td className="py-1.5 text-right text-slate-900">
+                    {formatMoney(p.amount.toString(), p.currency)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -122,7 +136,7 @@ export default async function PropertyStatementPage({
                   {m.title}
                   {m.vendor && ` — ${m.vendor}`}
                 </span>
-                <span className="text-slate-900">{formatUGX(Number(m.cost ?? 0))}</span>
+                <span className="text-slate-900">{formatMoney(Number(m.cost ?? 0), "UGX")}</span>
               </li>
             ))}
           </ul>

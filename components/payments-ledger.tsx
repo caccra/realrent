@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SearchFilterBox } from "@/components/search-filter-box";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import type { getLandlordPayments } from "@/lib/data";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -59,7 +59,7 @@ export function PaymentsLedger({ payments, leaseHrefPrefix }: { payments: Paymen
                     {lease.unit.property.name} — {lease.unit.label}
                   </td>
                   <td className="px-4 py-2 text-slate-600">{METHOD_LABELS[p.method] ?? p.method}</td>
-                  <td className="px-4 py-2 text-slate-900">{formatUGX(p.amount.toString())}</td>
+                  <td className="px-4 py-2 text-slate-900">{formatMoney(p.amount.toString(), p.currency)}</td>
                   <td className="px-4 py-2">
                     <Badge tone={STATUS_TONE[p.status]}>{p.status}</Badge>
                     {p.receipt && (

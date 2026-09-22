@@ -3,9 +3,15 @@ import { requireAdmin } from "@/lib/session";
 import { getAdminOverviewStats } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { ADMIN_NAV } from "@/lib/admin-nav";
+
+/** Platform revenue can span both currencies; joins them rather than summing raw numbers. */
+function formatByCurrency(entries: { currency: string; amount: number }[]): string {
+  if (entries.length === 0) return formatMoney(0, "UGX");
+  return entries.map((e) => formatMoney(e.amount, e.currency as Currency)).join(" + ");
+}
 
 const ROLE_LABELS: Record<string, string> = {
   LANDLORD: "Landlords",
@@ -40,8 +46,10 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <p className="text-sm text-slate-500">Revenue this month</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-700">{formatUGX(stats.revenueThisMonth)}</p>
-          <p className="mt-1 text-xs text-slate-400">{formatUGX(stats.totalRevenue)} all-time</p>
+          <p className="mt-1 text-2xl font-semibold text-emerald-700">
+            {formatByCurrency(stats.revenueThisMonthByCurrency)}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">{formatByCurrency(stats.totalRevenueByCurrency)} all-time</p>
         </Card>
       </div>
 

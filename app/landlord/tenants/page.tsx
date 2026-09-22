@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getLandlordTenants } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
@@ -77,7 +77,7 @@ export default async function TenantsPage() {
                     <Badge tone={lease.status === "ACTIVE" ? "green" : "slate"}>{lease.status}</Badge>
                   </td>
                   <td className={`px-4 py-2 ${balance > 0 ? "text-red-700" : "text-slate-600"}`}>
-                    {formatUGX(balance)}
+                    {formatMoney(balance, lease.currency)}
                   </td>
                   <td className="px-4 py-2 text-right">
                     <Link

@@ -30,6 +30,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       bathrooms: parsed.data.bathrooms ?? null,
       otherRooms: parsed.data.otherRooms || null,
       rentAmount: parsed.data.rentAmount,
+      currency: parsed.data.currency,
       billingCycle: parsed.data.billingCycle,
       floor: parsed.data.floor || null,
       shopNumber: parsed.data.shopNumber || null,

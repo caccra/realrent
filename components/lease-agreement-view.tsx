@@ -1,4 +1,4 @@
-import { formatUGX } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { PrintButton } from "@/components/print-button";
 
@@ -8,6 +8,7 @@ type AgreementLease = {
   endDate: Date | null;
   rentAmount: unknown;
   depositAmount: unknown;
+  currency: Currency;
   tenant: { name: string; phone: string | null };
   unit: {
     label: string;
@@ -59,8 +60,11 @@ export function LeaseAgreementView({ lease }: { lease: AgreementLease }) {
           {lease.endDate && (
             <Row label="Lease end date" value={new Date(lease.endDate).toLocaleDateString("en-UG")} />
           )}
-          <Row label="Rent" value={`${formatUGX(String(lease.rentAmount))} / ${unit.billingCycle.toLowerCase()}`} />
-          <Row label="Security deposit" value={formatUGX(String(lease.depositAmount))} />
+          <Row
+            label="Rent"
+            value={`${formatMoney(String(lease.rentAmount), lease.currency)} / ${unit.billingCycle.toLowerCase()}`}
+          />
+          <Row label="Security deposit" value={formatMoney(String(lease.depositAmount), lease.currency)} />
         </div>
 
         <div className="mt-6 space-y-3 border-t border-slate-200 pt-4">

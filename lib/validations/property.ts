@@ -10,6 +10,11 @@ export const PROPERTY_LISTING_TYPES = [
   { value: "SALE", label: "For sale" },
 ] as const;
 
+export const CURRENCIES = [
+  { value: "UGX", label: "UGX" },
+  { value: "USD", label: "USD" },
+] as const;
+
 export const RESIDENTIAL_PROPERTY_TYPES = [
   { value: "APARTMENT", label: "Apartment" },
   { value: "HOUSE", label: "Standalone House" },
@@ -105,6 +110,7 @@ export const propertySchema = z
     amenities: z.array(z.string()).default([]),
     listingType: z.enum(["RENTAL", "SALE"]).default("RENTAL"),
     salePrice: z.coerce.number().positive("Sale price must be greater than 0").optional(),
+    saleCurrency: z.enum(["UGX", "USD"]).default("UGX"),
     saleBedrooms: z.coerce.number().int().min(0).max(20).optional(),
     saleBathrooms: z.coerce.number().int().min(0).max(20).optional(),
   })
@@ -122,6 +128,7 @@ export const unitSchema = z.object({
   bathrooms: z.coerce.number().int().min(0).max(20).optional(),
   otherRooms: z.string().trim().max(200, "Too long").optional().or(z.literal("")),
   rentAmount: z.coerce.number().positive("Rent must be greater than 0"),
+  currency: z.enum(["UGX", "USD"]).default("UGX"),
   billingCycle: z.enum(["MONTHLY", "QUARTERLY", "ANNUAL"]).default("MONTHLY"),
   floor: z.string().trim().max(50, "Too long").optional().or(z.literal("")),
   shopNumber: z.string().trim().max(50, "Too long").optional().or(z.literal("")),

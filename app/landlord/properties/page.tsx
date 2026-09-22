@@ -7,7 +7,7 @@ import { Badge, Card } from "@/components/ui";
 import { PROPERTY_USAGES } from "@/lib/validations/property";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 
 export default async function PropertiesPage() {
   const user = await requireUser("LANDLORD");
@@ -72,7 +72,7 @@ export default async function PropertiesPage() {
                     <p className="mt-1 text-sm text-slate-500">{property.address}</p>
                     {isSale ? (
                       <p className="mt-3 text-sm text-slate-600">
-                        {formatUGX(property.salePrice?.toString() ?? "0")}
+                        {formatMoney(property.salePrice?.toString() ?? "0", property.saleCurrency)}
                       </p>
                     ) : (
                       <p className="mt-3 text-sm text-slate-600">

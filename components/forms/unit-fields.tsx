@@ -1,5 +1,5 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import type { UnitFormInput } from "@/lib/validations/property";
+import { CURRENCIES, type UnitFormInput } from "@/lib/validations/property";
 import { FieldError, Input, Label, Select } from "@/components/ui";
 
 export function UnitFields({
@@ -24,8 +24,17 @@ export function UnitFields({
         <FieldError message={errors.bedrooms?.message} />
       </div>
       <div>
-        <Label htmlFor="rentAmount">Rent amount (UGX)</Label>
-        <Input id="rentAmount" type="number" min={0} {...register("rentAmount")} />
+        <Label htmlFor="rentAmount">Rent amount</Label>
+        <div className="flex gap-2">
+          <Input id="rentAmount" type="number" min={0} {...register("rentAmount")} />
+          <Select className="w-24 shrink-0" {...register("currency")}>
+            {CURRENCIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+        </div>
         <FieldError message={errors.rentAmount?.message} />
       </div>
       <div>

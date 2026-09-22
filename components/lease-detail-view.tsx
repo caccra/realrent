@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
-import { formatUGX } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { invoiceDisplayStatus } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { formatPhoneForDisplay } from "@/lib/phone";
@@ -54,7 +54,11 @@ export function LeaseDetailView({
         <div className="mb-4 flex items-center justify-between">
           <Badge tone={lease.status === "ACTIVE" ? "green" : "slate"}>{lease.status}</Badge>
           {canEndLease && lease.status === "ACTIVE" && (
-            <EndLeaseButton leaseId={lease.id} depositAmount={Number(lease.depositAmount)} />
+            <EndLeaseButton
+              leaseId={lease.id}
+              depositAmount={Number(lease.depositAmount)}
+              currency={lease.currency}
+            />
           )}
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -67,11 +71,11 @@ export function LeaseDetailView({
           </div>
           <div>
             <p className="text-sm text-slate-500">Rent</p>
-            <p className="font-medium text-slate-900">{formatUGX(lease.rentAmount.toString())}</p>
+            <p className="font-medium text-slate-900">{formatMoney(lease.rentAmount.toString(), lease.currency)}</p>
           </div>
           <div>
             <p className="text-sm text-slate-500">Deposit</p>
-            <p className="font-medium text-slate-900">{formatUGX(lease.depositAmount.toString())}</p>
+            <p className="font-medium text-slate-900">{formatMoney(lease.depositAmount.toString(), lease.currency)}</p>
           </div>
         </div>
         <Link
@@ -87,11 +91,11 @@ export function LeaseDetailView({
             <div className="mt-2 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
               <div>
                 <p className="text-slate-500">Deductions</p>
-                <p className="text-slate-900">{formatUGX(Number(lease.depositDeductions ?? 0))}</p>
+                <p className="text-slate-900">{formatMoney(Number(lease.depositDeductions ?? 0), lease.currency)}</p>
               </div>
               <div>
                 <p className="text-slate-500">Refund due</p>
-                <p className="text-slate-900">{formatUGX(Number(lease.depositRefundAmount))}</p>
+                <p className="text-slate-900">{formatMoney(Number(lease.depositRefundAmount), lease.currency)}</p>
               </div>
               <div>
                 <p className="text-slate-500">Status</p>
@@ -175,7 +179,7 @@ export function LeaseDetailView({
         )}
       </div>
 
-      <RentChangeSection leaseId={lease.id} rentChanges={lease.rentChanges} />
+      <RentChangeSection leaseId={lease.id} rentChanges={lease.rentChanges} currency={lease.currency} />
 
       {canReviewTenant && (
         <div className="mb-6">
@@ -216,9 +220,9 @@ export function LeaseDetailView({
                   </p>
                   <p className="text-sm text-slate-500">
                     Due {new Date(invoice.dueDate).toLocaleDateString("en-UG")} ·{" "}
-                    {formatUGX(totalDue)}
-                    {hasLateFee && ` (incl. ${formatUGX(invoice.lateFeeAmount.toString())} late fee)`}
-                    {paid > 0 && status !== "PAID" && ` (${formatUGX(paid)} paid)`}
+                    {formatMoney(totalDue, invoice.currency)}
+                    {hasLateFee && ` (incl. ${formatMoney(invoice.lateFeeAmount.toString(), invoice.currency)} late fee)`}
+                    {paid > 0 && status !== "PAID" && ` (${formatMoney(paid, invoice.currency)} paid)`}
                   </p>
                 </div>
                 <Badge tone={STATUS_TONE[status]}>{status}</Badge>
@@ -235,7 +239,7 @@ export function LeaseDetailView({
                 <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-500">
                   {invoice.payments.map((p) => (
                     <p key={p.id}>
-                      {formatUGX(p.amount.toString())} via {p.method} on{" "}
+                      {formatMoney(p.amount.toString(), p.currency)} via {p.method} on{" "}
                       {new Date(p.paidAt).toLocaleDateString("en-UG")}
                       {p.receipt && ` · Receipt ${p.receipt.receiptNumber}`}
                     </p>

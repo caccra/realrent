@@ -11,6 +11,7 @@ type Invoice = {
   periodEnd: Date;
   dueDate: Date;
   amountDue: unknown;
+  currency: "UGX" | "USD";
   lateFeeAmount: unknown;
   payments: Payment[];
 };
@@ -22,6 +23,7 @@ export type LedgerEntry = {
   debit: number;
   credit: number;
   balance: number;
+  currency: "UGX" | "USD";
 };
 
 /**
@@ -30,7 +32,7 @@ export type LedgerEntry = {
  * A positive balance means the tenant owes that much.
  */
 export function buildLeaseLedger(invoices: Invoice[]): LedgerEntry[] {
-  type RawEntry = { date: Date; description: string; debit: number; credit: number };
+  type RawEntry = { date: Date; description: string; debit: number; credit: number; currency: "UGX" | "USD" };
   const raw: RawEntry[] = [];
 
   for (const invoice of invoices) {
@@ -44,6 +46,7 @@ export function buildLeaseLedger(invoices: Invoice[]): LedgerEntry[] {
       description: `Rent — ${periodLabel}`,
       debit: Number(invoice.amountDue),
       credit: 0,
+      currency: invoice.currency,
     });
 
     if (Number(invoice.lateFeeAmount) > 0) {
@@ -52,6 +55,7 @@ export function buildLeaseLedger(invoices: Invoice[]): LedgerEntry[] {
         description: `Late fee — ${periodLabel}`,
         debit: Number(invoice.lateFeeAmount),
         credit: 0,
+        currency: invoice.currency,
       });
     }
 
@@ -61,6 +65,7 @@ export function buildLeaseLedger(invoices: Invoice[]): LedgerEntry[] {
         description: `Payment via ${payment.method === "MOBILE_MONEY" ? "Mobile Money" : payment.method === "BANK" ? "Bank transfer" : "Cash"}`,
         debit: 0,
         credit: Number(payment.amount),
+        currency: invoice.currency,
       });
     }
   }
