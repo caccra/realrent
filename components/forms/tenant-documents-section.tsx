@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TENANT_DOCUMENT_TYPES } from "@/lib/validations/tenant-document";
-import { Button, Card, Input, Label, Select, SecondaryButton } from "@/components/ui";
+import { Badge, Button, Card, Input, Label, Select, SecondaryButton } from "@/components/ui";
 
 type TenantDocument = {
   id: string;
@@ -12,6 +12,7 @@ type TenantDocument = {
   url: string;
   fileName: string;
   createdAt: Date | string;
+  verified: boolean;
 };
 
 export function TenantDocumentsSection({ documents }: { documents: TenantDocument[] }) {
@@ -103,15 +104,18 @@ export function TenantDocumentsSection({ documents }: { documents: TenantDocumen
         <ul className="space-y-2">
           {documents.map((doc) => (
             <li key={doc.id} className="flex items-center justify-between text-sm">
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-emerald-700 hover:text-emerald-800"
-              >
-                {TENANT_DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label ?? doc.type}
-                {doc.label && ` — ${doc.label}`}
-              </a>
+              <span className="flex items-center gap-2">
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-emerald-700 hover:text-emerald-800"
+                >
+                  {TENANT_DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label ?? doc.type}
+                  {doc.label && ` — ${doc.label}`}
+                </a>
+                <Badge tone={doc.verified ? "green" : "slate"}>{doc.verified ? "Verified" : "Unverified"}</Badge>
+              </span>
               <SecondaryButton
                 className="text-xs text-red-700"
                 onClick={() => handleDelete(doc.id)}

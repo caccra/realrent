@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit-log";
 
 export async function DELETE(
   _request: Request,
@@ -26,5 +27,12 @@ export async function DELETE(
   }
 
   await prisma.caretakerAssignment.delete({ where: { id: assignment.id } });
+  await logAudit({
+    userId: session.user.id,
+    action: "caretaker.remove",
+    targetType: "Property",
+    targetId: id,
+    metadata: { caretakerId },
+  });
   return NextResponse.json({ ok: true });
 }

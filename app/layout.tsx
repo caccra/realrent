@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
   description: "Digital leases, rent tracking, and payments for Uganda landlords and tenants.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#047857",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -27,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>{children}</Providers>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

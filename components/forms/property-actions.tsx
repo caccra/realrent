@@ -28,6 +28,10 @@ export function PropertyActions({
             usage: property.usage,
             propertyType: property.propertyType,
             amenities: property.amenities,
+            listingType: property.listingType,
+            salePrice: property.salePrice,
+            saleBedrooms: property.saleBedrooms,
+            saleBathrooms: property.saleBathrooms,
           }}
           onDone={() => setEditing(false)}
         />

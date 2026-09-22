@@ -7,6 +7,7 @@ import { Badge, Card } from "@/components/ui";
 import { PROPERTY_USAGES } from "@/lib/validations/property";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
+import { formatUGX } from "@/lib/money";
 
 export default async function PropertiesPage() {
   const user = await requireUser("LANDLORD");
@@ -32,6 +33,7 @@ export default async function PropertiesPage() {
           <SearchFilterBox containerId="properties-grid" placeholder="Search by name or address…" />
           <div id="properties-grid" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {properties.map((property) => {
+            const isSale = property.listingType === "SALE";
             const occupied = property.units.filter((u) => u.status === "OCCUPIED").length;
             return (
               <Link
@@ -58,16 +60,25 @@ export default async function PropertiesPage() {
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-slate-900">{property.name}</h3>
-                      {property.usage && (
-                        <Badge tone={property.usage === "COMMERCIAL" ? "amber" : "green"}>
-                          {PROPERTY_USAGES.find((u) => u.value === property.usage)?.label}
-                        </Badge>
-                      )}
+                      <div className="flex shrink-0 gap-1">
+                        <Badge tone={isSale ? "amber" : "green"}>{isSale ? "For sale" : "For rent"}</Badge>
+                        {property.usage && (
+                          <Badge tone={property.usage === "COMMERCIAL" ? "amber" : "green"}>
+                            {PROPERTY_USAGES.find((u) => u.value === property.usage)?.label}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <p className="mt-1 text-sm text-slate-500">{property.address}</p>
-                    <p className="mt-3 text-sm text-slate-600">
-                      {property.units.length} unit{property.units.length === 1 ? "" : "s"} — {occupied} occupied
-                    </p>
+                    {isSale ? (
+                      <p className="mt-3 text-sm text-slate-600">
+                        {formatUGX(property.salePrice?.toString() ?? "0")}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-sm text-slate-600">
+                        {property.units.length} unit{property.units.length === 1 ? "" : "s"} — {occupied} occupied
+                      </p>
+                    )}
                   </div>
                 </Card>
               </Link>

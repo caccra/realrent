@@ -21,3 +21,27 @@ export async function canManageProperty(
   }
   return false;
 }
+
+/**
+ * A tenant can be managed (e.g. their documents reviewed) by a landlord or
+ * caretaker who has a lease relationship with them on at least one property.
+ */
+export async function canManageTenant(
+  userId: string,
+  role: string | null | undefined,
+  tenantId: string
+): Promise<boolean> {
+  if (role === "LANDLORD") {
+    const lease = await prisma.lease.findFirst({
+      where: { tenantId, unit: { property: { landlordId: userId } } },
+    });
+    return !!lease;
+  }
+  if (role === "CARETAKER") {
+    const lease = await prisma.lease.findFirst({
+      where: { tenantId, unit: { property: { caretakerAssignments: { some: { caretakerId: userId } } } } },
+    });
+    return !!lease;
+  }
+  return false;
+}

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { endLeaseSchema } from "@/lib/validations/lease";
+import { logAudit } from "@/lib/audit-log";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,6 +53,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       prisma.unit.update({ where: { id: lease.unitId }, data: { status: "VACANT" } }),
     ]);
 
+    await logAudit({
+      userId: session.user.id,
+      action: "lease.end",
+      targetType: "Lease",
+      targetId: lease.id,
+      metadata: { deductions, refundAmount },
+    });
+
     return NextResponse.json({ ok: true });
   }
 
@@ -67,6 +76,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     await prisma.lease.update({ where: { id: lease.id }, data: { depositRefundedAt: new Date() } });
+    await logAudit({
+      userId: session.user.id,
+      action: "lease.deposit-refunded",
+      targetType: "Lease",
+      targetId: lease.id,
+      metadata: { refundAmount: Number(lease.depositRefundAmount) },
+    });
     return NextResponse.json({ ok: true });
   }
 

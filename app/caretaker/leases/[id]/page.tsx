@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
-import { getLeaseWithDetails } from "@/lib/data";
+import { getLeaseWithDetails, getTenantScreeningReport } from "@/lib/data";
 import { canManageProperty } from "@/lib/authorization";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { LeaseDetailView } from "@/components/lease-detail-view";
@@ -19,6 +19,8 @@ export default async function CaretakerLeaseDetailPage({
     notFound();
   }
 
+  const screeningReport = await getTenantScreeningReport(lease.tenantId);
+
   return (
     <DashboardShell
       title={`${lease.unit.property.name} — ${lease.unit.label}`}
@@ -30,6 +32,7 @@ export default async function CaretakerLeaseDetailPage({
         canEndLease={false}
         canReviewTenant={false}
         agreementHref={`/caretaker/leases/${lease.id}/agreement`}
+        screeningReport={screeningReport}
       />
     </DashboardShell>
   );

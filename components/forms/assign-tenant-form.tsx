@@ -5,7 +5,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { leaseSchema, type LeaseFormInput, type LeaseInput } from "@/lib/validations/property";
-import { Button, Card, FieldError, Input, Label, Select } from "@/components/ui";
+import { Button, Card, FieldError, Input, Label, SecondaryButton, Select } from "@/components/ui";
+import { TenantScreeningCard } from "@/components/tenant-screening-card";
+import type { getTenantScreeningReport } from "@/lib/data";
+
+type LookupResult =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "not-found" }
+  | { status: "error"; message: string }
+  | { status: "found"; name: string; report: Awaited<ReturnType<typeof getTenantScreeningReport>> };
 
 type PropertyOption = {
   id: string;
@@ -21,6 +30,7 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
   const [created, setCreated] = useState<{ id: string; tenantPhone: string; tempPassword: string | null } | null>(
     null
   );
+  const [lookup, setLookup] = useState<LookupResult>({ status: "idle" });
 
   const selectedProperty = properties.find((p) => p.id === propertyId) ?? properties[0];
   const units = selectedProperty?.units ?? [];
@@ -29,6 +39,7 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<LeaseFormInput, unknown, LeaseInput>({
     resolver: zodResolver(leaseSchema),
@@ -39,6 +50,23 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
       startDate: new Date().toISOString().slice(0, 10),
     },
   });
+
+  async function handleLookup() {
+    const phone = getValues("tenantPhone");
+    if (!phone) return;
+    setLookup({ status: "loading" });
+    try {
+      const res = await fetch(`/api/tenants/lookup?phone=${encodeURIComponent(phone)}`);
+      const body = await res.json();
+      if (!res.ok) {
+        setLookup({ status: "error", message: body.error ?? "Something went wrong" });
+        return;
+      }
+      setLookup(body.exists ? { status: "found", name: body.name, report: body.report } : { status: "not-found" });
+    } catch {
+      setLookup({ status: "error", message: "Couldn't reach the server" });
+    }
+  }
 
   function handleUnitChange(unitId: string) {
     const unit = units.find((u) => u.id === unitId);
@@ -146,7 +174,12 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
           </div>
           <div>
             <Label htmlFor="tenantPhone">Tenant phone</Label>
-            <Input id="tenantPhone" placeholder="0771234567" {...register("tenantPhone")} />
+            <div className="flex gap-2">
+              <Input id="tenantPhone" placeholder="0771234567" {...register("tenantPhone")} />
+              <SecondaryButton type="button" onClick={handleLookup} className="shrink-0 text-xs">
+                Check history
+              </SecondaryButton>
+            </div>
             <FieldError message={errors.tenantPhone?.message} />
           </div>
           <div>
@@ -165,6 +198,18 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
             <FieldError message={errors.depositAmount?.message} />
           </div>
         </div>
+
+        {lookup.status === "loading" && <p className="text-sm text-slate-500">Checking…</p>}
+        {lookup.status === "not-found" && (
+          <p className="text-sm text-slate-500">No RealRent account found for that number yet — a new one will be created.</p>
+        )}
+        {lookup.status === "error" && <p className="text-sm text-red-600">{lookup.message}</p>}
+        {lookup.status === "found" && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-900">Existing tenant: {lookup.name}</p>
+            <TenantScreeningCard report={lookup.report} />
+          </div>
+        )}
 
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
 

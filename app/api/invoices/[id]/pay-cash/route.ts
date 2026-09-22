@@ -6,6 +6,7 @@ import { cashPaymentSchema } from "@/lib/validations/property";
 import { generateReceiptNumber } from "@/lib/invoicing";
 import { canManageProperty } from "@/lib/authorization";
 import { invoiceTotalDue } from "@/lib/invoice-total";
+import { logAudit } from "@/lib/audit-log";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -69,6 +70,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
 
     return { payment, receipt };
+  });
+
+  await logAudit({
+    userId: session.user.id,
+    action: "payment.record-cash",
+    targetType: "Payment",
+    targetId: result.payment.id,
+    metadata: { invoiceId: invoice.id, amount: parsed.data.amount },
   });
 
   return NextResponse.json(result);

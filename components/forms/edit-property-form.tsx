@@ -34,6 +34,8 @@ export function EditPropertyForm({
 
   const usage = useWatch({ control, name: "usage" });
   const isCommercial = usage === "COMMERCIAL";
+  const listingType = useWatch({ control, name: "listingType" });
+  const isSale = listingType === "SALE";
 
   async function onSubmit(data: PropertyInput) {
     setServerError(null);
@@ -58,7 +60,13 @@ export function EditPropertyForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <PropertyFields register={register} errors={errors} setValue={setValue} isCommercial={isCommercial} />
+      <PropertyFields
+        register={register}
+        errors={errors}
+        setValue={setValue}
+        isCommercial={isCommercial}
+        isSale={isSale}
+      />
       {serverError && <p className="text-sm text-red-600">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={submitting}>

@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma, PropertyType, PropertyUsage } from "@prisma/client";
+import type { Prisma, PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 
 export type PublicPropertyFilters = {
+  listingType?: PropertyListingType;
   usage?: PropertyUsage;
   propertyType?: PropertyType;
   minPrice?: number;
@@ -23,20 +24,42 @@ export function getPublicProperties(filters: PublicPropertyFilters = {}) {
     unitWhere.bedrooms = { gte: filters.bedrooms };
   }
 
-  const where: Prisma.PropertyWhereInput = { units: { some: unitWhere } };
-  if (filters.usage) where.usage = filters.usage;
-  if (filters.propertyType) where.propertyType = filters.propertyType;
+  const rentalCondition: Prisma.PropertyWhereInput = { listingType: "RENTAL", units: { some: unitWhere } };
+
+  const saleCondition: Prisma.PropertyWhereInput = { listingType: "SALE" };
+  if (filters.minPrice != null || filters.maxPrice != null) {
+    saleCondition.salePrice = {
+      ...(filters.minPrice != null ? { gte: filters.minPrice } : {}),
+      ...(filters.maxPrice != null ? { lte: filters.maxPrice } : {}),
+    };
+  }
+  if (filters.bedrooms != null) {
+    saleCondition.saleBedrooms = { gte: filters.bedrooms };
+  }
+
+  const listingCondition: Prisma.PropertyWhereInput =
+    filters.listingType === "RENTAL"
+      ? rentalCondition
+      : filters.listingType === "SALE"
+        ? saleCondition
+        : { OR: [rentalCondition, saleCondition] };
+
+  const and: Prisma.PropertyWhereInput[] = [listingCondition];
+  if (filters.usage) and.push({ usage: filters.usage });
+  if (filters.propertyType) and.push({ propertyType: filters.propertyType });
   if (filters.q) {
     const q = filters.q;
-    where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { address: { contains: q, mode: "insensitive" } },
-      { location: { contains: q, mode: "insensitive" } },
-    ];
+    and.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { address: { contains: q, mode: "insensitive" } },
+        { location: { contains: q, mode: "insensitive" } },
+      ],
+    });
   }
 
   return prisma.property.findMany({
-    where,
+    where: { AND: and },
     orderBy: { createdAt: "desc" },
     include: {
       images: { orderBy: [{ featured: "desc" }, { order: "asc" }], take: 1 },
@@ -63,6 +86,21 @@ export async function getPropertyReviewSummaries(propertyIds: string[]) {
   return map;
 }
 
+export function getUserAuditLogs(userId: string) {
+  return prisma.auditLog.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+}
+
+export function getPropertyInquiries(propertyId: string) {
+  return prisma.propertyInquiry.findMany({
+    where: { propertyId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export function incrementPropertyView(propertyId: string) {
   return prisma.property.update({
     where: { id: propertyId },
@@ -73,7 +111,10 @@ export function incrementPropertyView(propertyId: string) {
 
 export function getPublicPropertyDetail(propertyId: string) {
   return prisma.property.findFirst({
-    where: { id: propertyId, units: { some: { status: "VACANT" } } },
+    where: {
+      id: propertyId,
+      OR: [{ listingType: "RENTAL", units: { some: { status: "VACANT" } } }, { listingType: "SALE" }],
+    },
     include: {
       images: { orderBy: [{ featured: "desc" }, { order: "asc" }] },
       units: { where: { status: "VACANT" }, orderBy: { rentAmount: "asc" } },
@@ -400,6 +441,48 @@ export function getTenantActiveLeases(tenantId: string) {
       reviews: true,
     },
   });
+}
+
+export async function getTenantScreeningReport(tenantId: string) {
+  const [leases, reviewAgg, recentReviews, invoices] = await Promise.all([
+    prisma.lease.findMany({
+      where: { tenantId },
+      select: { id: true, status: true, startDate: true, endDate: true },
+    }),
+    prisma.review.aggregate({
+      where: { targetId: tenantId, direction: "LANDLORD_TO_TENANT" },
+      _avg: { rating: true },
+      _count: true,
+    }),
+    prisma.review.findMany({
+      where: { targetId: tenantId, direction: "LANDLORD_TO_TENANT", comment: { not: null } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { author: { select: { name: true } } },
+    }),
+    prisma.rentInvoice.findMany({
+      where: { lease: { tenantId }, status: "PAID" },
+      include: { payments: { orderBy: { paidAt: "asc" }, take: 1 } },
+    }),
+  ]);
+
+  let paidOnTime = 0;
+  for (const inv of invoices) {
+    const firstPayment = inv.payments[0];
+    if (firstPayment && firstPayment.paidAt <= inv.dueDate) paidOnTime += 1;
+  }
+
+  return {
+    totalLeases: leases.length,
+    activeLeases: leases.filter((l) => l.status === "ACTIVE").length,
+    endedLeases: leases.filter((l) => l.status === "ENDED").length,
+    terminatedLeases: leases.filter((l) => l.status === "TERMINATED").length,
+    onTimePaymentRate: invoices.length > 0 ? paidOnTime / invoices.length : null,
+    settledInvoiceCount: invoices.length,
+    averageRating: reviewAgg._avg.rating,
+    reviewCount: reviewAgg._count,
+    recentReviews,
+  };
 }
 
 export async function getLandlordRatingSummary(landlordId: string) {

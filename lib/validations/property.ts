@@ -5,6 +5,11 @@ export const PROPERTY_USAGES = [
   { value: "COMMERCIAL", label: "Commercial" },
 ] as const;
 
+export const PROPERTY_LISTING_TYPES = [
+  { value: "RENTAL", label: "For rent" },
+  { value: "SALE", label: "For sale" },
+] as const;
+
 export const RESIDENTIAL_PROPERTY_TYPES = [
   { value: "APARTMENT", label: "Apartment" },
   { value: "HOUSE", label: "Standalone House" },
@@ -71,33 +76,42 @@ export const COMMERCIAL_AMENITIES = [
   "Internet",
 ] as const;
 
-export const propertySchema = z.object({
-  name: z.string().trim().min(2, "Property name is too short"),
-  address: z.string().trim().min(3, "Address is too short"),
-  location: z.string().trim().max(120, "Location is too long").optional().or(z.literal("")),
-  description: z.string().trim().max(2000, "Description is too long").optional().or(z.literal("")),
-  usage: z.enum(["RESIDENTIAL", "COMMERCIAL"]).optional().or(z.literal("")),
-  propertyType: z
-    .enum([
-      "APARTMENT",
-      "HOUSE",
-      "HOSTEL",
-      "SHELL_HOUSE",
-      "SEMI_DETACHED",
-      "STOREYED_BUILDING",
-      "STUDIO_ROOM",
-      "MANSION",
-      "DUPLEX",
-      "BUNGALOW",
-      "STANDALONE",
-      "MALL",
-      "ARCADE",
-      "RENTAL_UNITS",
-    ])
-    .optional()
-    .or(z.literal("")),
-  amenities: z.array(z.string()).default([]),
-});
+export const propertySchema = z
+  .object({
+    name: z.string().trim().min(2, "Property name is too short"),
+    address: z.string().trim().min(3, "Address is too short"),
+    location: z.string().trim().max(120, "Location is too long").optional().or(z.literal("")),
+    description: z.string().trim().max(2000, "Description is too long").optional().or(z.literal("")),
+    usage: z.enum(["RESIDENTIAL", "COMMERCIAL"]).optional().or(z.literal("")),
+    propertyType: z
+      .enum([
+        "APARTMENT",
+        "HOUSE",
+        "HOSTEL",
+        "SHELL_HOUSE",
+        "SEMI_DETACHED",
+        "STOREYED_BUILDING",
+        "STUDIO_ROOM",
+        "MANSION",
+        "DUPLEX",
+        "BUNGALOW",
+        "STANDALONE",
+        "MALL",
+        "ARCADE",
+        "RENTAL_UNITS",
+      ])
+      .optional()
+      .or(z.literal("")),
+    amenities: z.array(z.string()).default([]),
+    listingType: z.enum(["RENTAL", "SALE"]).default("RENTAL"),
+    salePrice: z.coerce.number().positive("Sale price must be greater than 0").optional(),
+    saleBedrooms: z.coerce.number().int().min(0).max(20).optional(),
+    saleBathrooms: z.coerce.number().int().min(0).max(20).optional(),
+  })
+  .refine((data) => data.listingType !== "SALE" || data.salePrice != null, {
+    message: "Enter a sale price",
+    path: ["salePrice"],
+  });
 
 export type PropertyInput = z.infer<typeof propertySchema>;
 export type PropertyFormInput = z.input<typeof propertySchema>;
@@ -142,3 +156,12 @@ export const appointCaretakerSchema = z.object({
 });
 
 export type AppointCaretakerInput = z.infer<typeof appointCaretakerSchema>;
+
+export const propertyInquirySchema = z.object({
+  name: z.string().trim().min(2, "Name is too short"),
+  phone: z.string().trim().min(9, "Enter a valid phone number"),
+  email: z.string().trim().email().optional().or(z.literal("")),
+  message: z.string().trim().min(5, "Message is too short").max(1000, "Message is too long"),
+});
+
+export type PropertyInquiryInput = z.infer<typeof propertyInquirySchema>;

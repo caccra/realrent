@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { propertySchema } from "@/lib/validations/property";
 import { deletePropertyImageFile } from "@/lib/storage";
+import { logAudit } from "@/lib/audit-log";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,6 +34,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       usage: parsed.data.usage || null,
       propertyType: parsed.data.propertyType || null,
       amenities: parsed.data.amenities,
+      listingType: parsed.data.listingType,
+      salePrice: parsed.data.listingType === "SALE" ? parsed.data.salePrice : null,
+      saleBedrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBedrooms ?? null : null,
+      saleBathrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBathrooms ?? null : null,
     },
   });
 
@@ -62,5 +67,12 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   await prisma.property.delete({ where: { id } });
   await Promise.all(property.images.map((img) => deletePropertyImageFile(img.url)));
+  await logAudit({
+    userId: session.user.id,
+    action: "property.delete",
+    targetType: "Property",
+    targetId: property.id,
+    metadata: { name: property.name },
+  });
   return NextResponse.json({ ok: true });
 }

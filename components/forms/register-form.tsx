@@ -97,6 +97,23 @@ export function RegisterForm() {
           <FieldError message={errors.password?.message} />
         </div>
 
+        <div>
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input type="checkbox" className="mt-0.5" {...register("agreedToTerms")} />
+            <span>
+              I agree to the{" "}
+              <Link href="/terms" target="_blank" className="font-medium text-emerald-700 hover:text-emerald-800">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" target="_blank" className="font-medium text-emerald-700 hover:text-emerald-800">
+                Privacy Policy
+              </Link>
+            </span>
+          </label>
+          <FieldError message={errors.agreedToTerms?.message} />
+        </div>
+
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
 
         <Button type="submit" className="w-full" disabled={submitting}>

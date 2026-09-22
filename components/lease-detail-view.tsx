@@ -13,8 +13,10 @@ import { ReviewForm } from "@/components/forms/review-form";
 import { LeaseAgreementUpload } from "@/components/forms/lease-agreement-upload";
 import { MessagesPanel } from "@/components/forms/messages-panel";
 import { SendReminderButton } from "@/components/forms/send-reminder-button";
+import { DocumentVerifyToggle } from "@/components/forms/document-verify-toggle";
+import { TenantScreeningCard } from "@/components/tenant-screening-card";
 import { TENANT_DOCUMENT_TYPES } from "@/lib/validations/tenant-document";
-import type { getLeaseWithDetails } from "@/lib/data";
+import type { getLeaseWithDetails, getTenantScreeningReport } from "@/lib/data";
 
 const STATUS_TONE = {
   PAID: "green",
@@ -28,11 +30,13 @@ export function LeaseDetailView({
   canEndLease,
   canReviewTenant,
   agreementHref,
+  screeningReport,
 }: {
   lease: NonNullable<Awaited<ReturnType<typeof getLeaseWithDetails>>>;
   canEndLease: boolean;
   canReviewTenant: boolean;
   agreementHref: string;
+  screeningReport?: Awaited<ReturnType<typeof getTenantScreeningReport>>;
 }) {
   const latestInvoice = lease.invoices[0];
   const canGenerateNext = lease.status === "ACTIVE" && latestInvoice?.status === "PAID";
@@ -128,9 +132,9 @@ export function LeaseDetailView({
       {lease.tenant.documents.length > 0 && (
         <Card className="mb-6">
           <p className="mb-2 text-sm font-medium text-slate-900">Tenant&apos;s documents</p>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {lease.tenant.documents.map((doc) => (
-              <li key={doc.id}>
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2">
                 <a
                   href={doc.url}
                   target="_blank"
@@ -140,11 +144,14 @@ export function LeaseDetailView({
                   {TENANT_DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label ?? doc.type}
                   {doc.label && ` — ${doc.label}`}
                 </a>
+                <DocumentVerifyToggle documentId={doc.id} verified={doc.verified} />
               </li>
             ))}
           </ul>
         </Card>
       )}
+
+      {screeningReport && <TenantScreeningCard report={screeningReport} />}
 
       <RentChangeSection leaseId={lease.id} rentChanges={lease.rentChanges} />
 

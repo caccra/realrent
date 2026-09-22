@@ -20,10 +20,10 @@ import { usePropertyImages } from "@/lib/hooks/use-property-images";
 
 const STEPS = ["Details", "Photos", "First unit"];
 
-function StepIndicator({ step }: { step: number }) {
+function StepIndicator({ step, steps }: { step: number; steps: string[] }) {
   return (
     <div className="mb-6 flex items-center gap-2 text-sm">
-      {STEPS.map((label, i) => (
+      {steps.map((label, i) => (
         <div key={label} className="flex items-center gap-2">
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
@@ -33,7 +33,7 @@ function StepIndicator({ step }: { step: number }) {
             {i + 1}
           </span>
           <span className={i + 1 === step ? "font-medium text-slate-900" : "text-slate-500"}>{label}</span>
-          {i < STEPS.length - 1 && <span className="mx-2 h-px w-8 bg-slate-200" />}
+          {i < steps.length - 1 && <span className="mx-2 h-px w-8 bg-slate-200" />}
         </div>
       ))}
     </div>
@@ -62,6 +62,9 @@ export function AddPropertyWizard() {
   const photoState = usePropertyImages(propertyId ?? "", []);
   const usage = useWatch({ control: detailsForm.control, name: "usage" });
   const isCommercial = usage === "COMMERCIAL";
+  const listingType = useWatch({ control: detailsForm.control, name: "listingType" });
+  const isSale = listingType === "SALE";
+  const steps = isSale ? ["Details", "Photos"] : STEPS;
 
   async function onCreateProperty(data: PropertyInput) {
     setDetailsError(null);
@@ -113,7 +116,7 @@ export function AddPropertyWizard() {
 
   return (
     <Card className="max-w-2xl">
-      <StepIndicator step={step} />
+      <StepIndicator step={step} steps={steps} />
 
       {step === 1 && (
         <form className="space-y-4" onSubmit={detailsForm.handleSubmit(onCreateProperty)}>
@@ -122,6 +125,7 @@ export function AddPropertyWizard() {
             errors={detailsForm.formState.errors}
             setValue={detailsForm.setValue}
             isCommercial={isCommercial}
+            isSale={isSale}
           />
           {detailsError && <p className="text-sm text-red-600">{detailsError}</p>}
           <Button type="submit" disabled={creating}>
@@ -142,14 +146,14 @@ export function AddPropertyWizard() {
             onSetFeatured={photoState.setFeatured}
           />
           <div className="flex gap-2">
-            <Button type="button" onClick={() => setStep(3)}>
+            <Button type="button" onClick={() => (isSale ? finish() : setStep(3))}>
               {photoState.images.length > 0 ? "Continue" : "Skip photos"}
             </Button>
           </div>
         </div>
       )}
 
-      {step === 3 && propertyId && (
+      {!isSale && step === 3 && propertyId && (
         <form className="space-y-4" onSubmit={unitForm.handleSubmit(onCreateUnit)}>
           <UnitFields
             register={unitForm.register}

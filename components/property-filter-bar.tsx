@@ -4,14 +4,17 @@ import { Card } from "@/components/ui";
 type Option = { value: string; label: string };
 
 export function PropertyFilterBar({
+  listingTypes,
   usages,
   propertyTypes,
   defaultValues,
 }: {
+  listingTypes: readonly Option[];
   usages: readonly Option[];
   propertyTypes: readonly Option[];
   defaultValues: {
     q: string;
+    listingType: string;
     usage: string;
     propertyType: string;
     minPrice: string;
@@ -35,6 +38,25 @@ export function PropertyFilterBar({
             placeholder="Name, address, area…"
             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
           />
+        </div>
+
+        <div>
+          <label htmlFor="listingType" className="mb-1 block text-xs font-medium text-slate-600">
+            Listing type
+          </label>
+          <select
+            id="listingType"
+            name="listingType"
+            defaultValue={defaultValues.listingType}
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Any</option>
+            {listingTypes.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -91,7 +113,7 @@ export function PropertyFilterBar({
 
         <div>
           <label htmlFor="minPrice" className="mb-1 block text-xs font-medium text-slate-600">
-            Min rent (UGX)
+            Min price (UGX)
           </label>
           <input
             id="minPrice"
@@ -105,7 +127,7 @@ export function PropertyFilterBar({
 
         <div>
           <label htmlFor="maxPrice" className="mb-1 block text-xs font-medium text-slate-600">
-            Max rent (UGX)
+            Max price (UGX)
           </label>
           <input
             id="maxPrice"

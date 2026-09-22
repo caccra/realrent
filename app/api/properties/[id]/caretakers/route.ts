@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { appointCaretakerSchema } from "@/lib/validations/property";
 import { findOrCreateUserByPhone } from "@/lib/user-provisioning";
+import { logAudit } from "@/lib/audit-log";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,6 +43,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const assignment = await prisma.caretakerAssignment.create({
     data: { propertyId: property.id, caretakerId: caretaker.id },
     include: { caretaker: true },
+  });
+
+  await logAudit({
+    userId: session.user.id,
+    action: "caretaker.appoint",
+    targetType: "Property",
+    targetId: property.id,
+    metadata: { caretakerId: caretaker.id, caretakerPhone: caretaker.phone },
   });
 
   return NextResponse.json({

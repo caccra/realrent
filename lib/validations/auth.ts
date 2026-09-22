@@ -6,6 +6,7 @@ export const registerSchema = z.object({
   email: z.string().trim().email().optional().or(z.literal("")),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["LANDLORD", "TENANT"]),
+  agreedToTerms: z.literal(true, "You must agree to the Terms of Service and Privacy Policy"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

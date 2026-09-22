@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
-import { getLeaseWithDetails } from "@/lib/data";
+import { getLeaseWithDetails, getTenantScreeningReport } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { LeaseDetailView } from "@/components/lease-detail-view";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
@@ -14,6 +14,8 @@ export default async function LeaseDetailPage({ params }: { params: Promise<{ id
     notFound();
   }
 
+  const screeningReport = await getTenantScreeningReport(lease.tenantId);
+
   return (
     <DashboardShell
       title={`${lease.unit.property.name} — ${lease.unit.label}`}
@@ -25,6 +27,7 @@ export default async function LeaseDetailPage({ params }: { params: Promise<{ id
         canEndLease
         canReviewTenant
         agreementHref={`/landlord/leases/${lease.id}/agreement`}
+        screeningReport={screeningReport}
       />
     </DashboardShell>
   );

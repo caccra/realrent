@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 
 export default function Home() {
   return (
@@ -35,6 +36,8 @@ export default function Home() {
           </Link>
         </div>
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

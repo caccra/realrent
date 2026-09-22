@@ -3,10 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/phone";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { generateResetToken } from "@/lib/tokens";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const TOKEN_TTL_MINUTES = 30;
 
 export async function POST(request: Request) {
+  const ipAllowed = await checkRateLimit(`forgot-password-ip:${getClientIp(request)}`, 10, 60);
+  if (!ipAllowed) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   const body = await request.json();
   const parsed = forgotPasswordSchema.safeParse(body);
 
@@ -20,6 +26,11 @@ export async function POST(request: Request) {
   const normalizedPhone = normalizePhone(parsed.data.phone);
   if (!normalizedPhone) {
     return NextResponse.json({ error: "Enter a valid phone number" }, { status: 400 });
+  }
+
+  const phoneAllowed = await checkRateLimit(`forgot-password:${normalizedPhone}`, 3, 15);
+  if (!phoneAllowed) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
   const user = await prisma.user.findUnique({ where: { phone: normalizedPhone } });

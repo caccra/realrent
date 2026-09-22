@@ -3,8 +3,14 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/phone";
 import { registerSchema } from "@/lib/validations/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ipAllowed = await checkRateLimit(`register:${getClientIp(request)}`, 10, 60);
+  if (!ipAllowed) {
+    return NextResponse.json({ error: "Too many signups from this network. Try again later." }, { status: 429 });
+  }
+
   const body = await request.json();
   const parsed = registerSchema.safeParse(body);
 

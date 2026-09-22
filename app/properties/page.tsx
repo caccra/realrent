@@ -2,12 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPropertyReviewSummaries, getPublicProperties } from "@/lib/data";
 import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 import { Badge, Card } from "@/components/ui";
 import { formatUGX } from "@/lib/money";
-import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
+import { PROPERTY_TYPES, PROPERTY_USAGES, PROPERTY_LISTING_TYPES } from "@/lib/validations/property";
 import { PropertyFilterBar } from "@/components/property-filter-bar";
 import { StarRating } from "@/components/star-rating";
-import type { PropertyType, PropertyUsage } from "@prisma/client";
+import type { PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function PublicPropertiesPage({
   const params = await searchParams;
   const filters = {
     q: toStr(params.q),
+    listingType: toStr(params.listingType) as PropertyListingType | undefined,
     usage: toStr(params.usage) as PropertyUsage | undefined,
     propertyType: toStr(params.propertyType) as PropertyType | undefined,
     minPrice: toInt(params.minPrice),
@@ -48,15 +50,17 @@ export default async function PublicPropertiesPage({
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
         <h1 className="mb-1 text-2xl font-semibold text-slate-900">Available properties</h1>
         <p className="mb-6 text-sm text-slate-500">
-          {properties.length} propert{properties.length === 1 ? "y" : "ies"} with vacant units
+          {properties.length} propert{properties.length === 1 ? "y" : "ies"}
           {hasFilters && " matching your filters"}
         </p>
 
         <PropertyFilterBar
+          listingTypes={PROPERTY_LISTING_TYPES}
           usages={PROPERTY_USAGES}
           propertyTypes={PROPERTY_TYPES}
           defaultValues={{
             q: filters.q ?? "",
+            listingType: filters.listingType ?? "",
             usage: filters.usage ?? "",
             propertyType: filters.propertyType ?? "",
             minPrice: params.minPrice ? String(params.minPrice) : "",
@@ -70,24 +74,28 @@ export default async function PublicPropertiesPage({
             <p className="text-sm text-slate-500">
               {hasFilters
                 ? "No properties match your filters. Try broadening your search."
-                : "No properties with vacant units right now. Check back soon."}
+                : "No properties listed right now. Check back soon."}
             </p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {properties.map((property) => {
+              const isSale = property.listingType === "SALE";
               const cheapest = property.units[0];
               const isCommercial = property.usage === "COMMERCIAL";
               const reviewSummary = reviewSummaries.get(property.id);
-              const unitLine = isCommercial
-                ? [cheapest.shopNumber && `Shop ${cheapest.shopNumber}`, cheapest.floor && `Floor: ${cheapest.floor}`]
-                    .filter(Boolean)
-                    .join(" · ")
-                : `${cheapest.bedrooms} bed${cheapest.bedrooms === 1 ? "" : "s"}${
-                    cheapest.bathrooms != null
-                      ? ` · ${cheapest.bathrooms} bath${cheapest.bathrooms === 1 ? "" : "s"}`
-                      : ""
-                  }`;
+              const unitLine =
+                !isSale && cheapest
+                  ? isCommercial
+                    ? [cheapest.shopNumber && `Shop ${cheapest.shopNumber}`, cheapest.floor && `Floor: ${cheapest.floor}`]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : `${cheapest.bedrooms} bed${cheapest.bedrooms === 1 ? "" : "s"}${
+                        cheapest.bathrooms != null
+                          ? ` · ${cheapest.bathrooms} bath${cheapest.bathrooms === 1 ? "" : "s"}`
+                          : ""
+                      }`
+                  : null;
               return (
                 <Link key={property.id} href={`/properties/${property.id}`}>
                   <Card className="h-full overflow-hidden p-0 hover:border-emerald-300">
@@ -109,11 +117,9 @@ export default async function PublicPropertiesPage({
                     <div className="p-5">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-medium text-slate-900">{property.name}</h3>
-                        {property.usage && (
-                          <Badge tone={property.usage === "COMMERCIAL" ? "amber" : "green"}>
-                            {PROPERTY_USAGES.find((u) => u.value === property.usage)?.label}
-                          </Badge>
-                        )}
+                        <div className="flex shrink-0 gap-1">
+                          <Badge tone={isSale ? "amber" : "green"}>{isSale ? "For sale" : "For rent"}</Badge>
+                        </div>
                       </div>
                       <p className="mt-1 text-sm text-slate-500">
                         {property.location || property.address}
@@ -126,14 +132,33 @@ export default async function PublicPropertiesPage({
                           </span>
                         </div>
                       )}
-                      <p className="mt-3 text-sm font-medium text-emerald-700">
-                        From {formatUGX(cheapest.rentAmount.toString())} /{" "}
-                        {cheapest.billingCycle.toLowerCase()}
-                      </p>
-                      {unitLine && <p className="mt-1 text-sm text-slate-500">{unitLine}</p>}
-                      <p className="mt-1 text-sm text-slate-500">
-                        {property.units.length} unit{property.units.length === 1 ? "" : "s"} available
-                      </p>
+                      {isSale ? (
+                        <>
+                          <p className="mt-3 text-sm font-medium text-emerald-700">
+                            {formatUGX(property.salePrice?.toString() ?? "0")}
+                          </p>
+                          {(property.saleBedrooms != null || property.saleBathrooms != null) && (
+                            <p className="mt-1 text-sm text-slate-500">
+                              {property.saleBedrooms != null && `${property.saleBedrooms} bed`}
+                              {property.saleBedrooms != null && property.saleBathrooms != null && " · "}
+                              {property.saleBathrooms != null && `${property.saleBathrooms} bath`}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        cheapest && (
+                          <>
+                            <p className="mt-3 text-sm font-medium text-emerald-700">
+                              From {formatUGX(cheapest.rentAmount.toString())} /{" "}
+                              {cheapest.billingCycle.toLowerCase()}
+                            </p>
+                            {unitLine && <p className="mt-1 text-sm text-slate-500">{unitLine}</p>}
+                            <p className="mt-1 text-sm text-slate-500">
+                              {property.units.length} unit{property.units.length === 1 ? "" : "s"} available
+                            </p>
+                          </>
+                        )
+                      )}
                     </div>
                   </Card>
                 </Link>
@@ -142,6 +167,8 @@ export default async function PublicPropertiesPage({
           </div>
         )}
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

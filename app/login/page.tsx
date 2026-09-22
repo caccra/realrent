@@ -32,7 +32,9 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        setServerError("Incorrect phone number or password");
+        setServerError(
+          res.error.includes("Too many") ? res.error : "Incorrect phone number or password"
+        );
         return;
       }
 

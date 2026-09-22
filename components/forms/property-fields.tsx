@@ -5,8 +5,8 @@ import {
   RESIDENTIAL_AMENITIES,
   RESIDENTIAL_PROPERTY_TYPES,
   PROPERTY_USAGES,
+  PROPERTY_LISTING_TYPES,
   type PropertyFormInput,
-  type PropertyInput,
 } from "@/lib/validations/property";
 import { FieldError, Input, Label, Select, Textarea } from "@/components/ui";
 
@@ -15,17 +15,46 @@ export function PropertyFields({
   errors,
   setValue,
   isCommercial,
+  isSale,
 }: {
   register: UseFormRegister<PropertyFormInput>;
-  errors: FieldErrors<PropertyInput>;
+  errors: FieldErrors<PropertyFormInput>;
   setValue: UseFormSetValue<PropertyFormInput>;
   isCommercial: boolean;
+  isSale: boolean;
 }) {
   const typeOptions = isCommercial ? COMMERCIAL_PROPERTY_TYPES : RESIDENTIAL_PROPERTY_TYPES;
   const amenityOptions = isCommercial ? COMMERCIAL_AMENITIES : RESIDENTIAL_AMENITIES;
 
   return (
     <>
+      <div>
+        <Label htmlFor="listingType">Listing type</Label>
+        <Select id="listingType" {...register("listingType")}>
+          {PROPERTY_LISTING_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </Select>
+      </div>
+      {isSale && (
+        <div className="grid grid-cols-1 gap-4 rounded-md border border-slate-200 p-4 sm:grid-cols-3">
+          <div>
+            <Label htmlFor="salePrice">Sale price (UGX)</Label>
+            <Input id="salePrice" type="number" min={0} {...register("salePrice")} />
+            <FieldError message={errors.salePrice?.message} />
+          </div>
+          <div>
+            <Label htmlFor="saleBedrooms">Bedrooms (optional)</Label>
+            <Input id="saleBedrooms" type="number" min={0} max={20} {...register("saleBedrooms")} />
+          </div>
+          <div>
+            <Label htmlFor="saleBathrooms">Bathrooms (optional)</Label>
+            <Input id="saleBathrooms" type="number" min={0} max={20} {...register("saleBathrooms")} />
+          </div>
+        </div>
+      )}
       <div>
         <Label htmlFor="usage">Usage</Label>
         <Select

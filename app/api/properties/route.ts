@@ -26,6 +26,10 @@ export async function POST(request: Request) {
       usage: parsed.data.usage || null,
       propertyType: parsed.data.propertyType || null,
       amenities: parsed.data.amenities,
+      listingType: parsed.data.listingType,
+      salePrice: parsed.data.listingType === "SALE" ? parsed.data.salePrice : null,
+      saleBedrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBedrooms ?? null : null,
+      saleBathrooms: parsed.data.listingType === "SALE" ? parsed.data.saleBathrooms ?? null : null,
     },
   });
 

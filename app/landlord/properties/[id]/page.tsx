@@ -15,7 +15,7 @@ import { formatUGX } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { unitDetailLine } from "@/lib/unit-details";
-import { getPropertyReviews } from "@/lib/data";
+import { getPropertyInquiries, getPropertyReviews } from "@/lib/data";
 import { StarRating } from "@/components/star-rating";
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -48,7 +48,9 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const typeLabel = PROPERTY_TYPES.find((t) => t.value === property.propertyType)?.label;
   const usageLabel = PROPERTY_USAGES.find((u) => u.value === property.usage)?.label;
   const isCommercial = property.usage === "COMMERCIAL";
+  const isSale = property.listingType === "SALE";
   const reviewSummary = await getPropertyReviews(property.id);
+  const inquiries = isSale ? await getPropertyInquiries(property.id) : [];
 
   return (
     <DashboardShell title={property.name} userName={user.name ?? ""} nav={LANDLORD_NAV}>
@@ -70,11 +72,22 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           </span>
         </div>
       )}
-      {(usageLabel || typeLabel) && (
-        <div className="mb-2 flex gap-2">
-          {usageLabel && <Badge tone={property.usage === "COMMERCIAL" ? "amber" : "green"}>{usageLabel}</Badge>}
-          {typeLabel && <Badge>{typeLabel}</Badge>}
-        </div>
+      <div className="mb-2 flex gap-2">
+        <Badge tone={isSale ? "amber" : "green"}>{isSale ? "For sale" : "For rent"}</Badge>
+        {usageLabel && <Badge tone={property.usage === "COMMERCIAL" ? "amber" : "green"}>{usageLabel}</Badge>}
+        {typeLabel && <Badge>{typeLabel}</Badge>}
+      </div>
+      {isSale && (
+        <p className="mb-2 text-lg font-semibold text-slate-900">
+          {formatUGX(property.salePrice?.toString() ?? "0")}
+          {(property.saleBedrooms != null || property.saleBathrooms != null) && (
+            <span className="ml-2 text-sm font-normal text-slate-500">
+              {property.saleBedrooms != null && `${property.saleBedrooms} bed`}
+              {property.saleBedrooms != null && property.saleBathrooms != null && " · "}
+              {property.saleBathrooms != null && `${property.saleBathrooms} bath`}
+            </span>
+          )}
+        </p>
       )}
       {property.description && (
         <p className="mb-2 max-w-2xl text-sm text-slate-600">{property.description}</p>
@@ -97,6 +110,10 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           usage: property.usage ?? "",
           propertyType: property.propertyType ?? "",
           amenities: property.amenities,
+          listingType: property.listingType,
+          salePrice: property.salePrice != null ? Number(property.salePrice) : undefined,
+          saleBedrooms: property.saleBedrooms ?? undefined,
+          saleBathrooms: property.saleBathrooms ?? undefined,
         }}
         unitCount={property.units.length}
       />
@@ -105,18 +122,47 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
 
       <CaretakerSection propertyId={property.id} caretakers={property.caretakerAssignments} />
 
-      <LateFeePolicyForm
-        propertyId={property.id}
-        defaultValues={{
-          lateFeeEnabled: property.lateFeeEnabled,
-          lateFeeType: property.lateFeeType ?? "",
-          lateFeeValue: property.lateFeeValue != null ? Number(property.lateFeeValue) : undefined,
-          lateFeeGraceDays: property.lateFeeGraceDays ?? undefined,
-        }}
-      />
+      {isSale && (
+        <Card className="mb-6">
+          <p className="mb-3 text-sm font-medium text-slate-900">
+            Inquiries ({inquiries.length})
+          </p>
+          {inquiries.length === 0 ? (
+            <p className="text-sm text-slate-500">No inquiries yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {inquiries.map((inq) => (
+                <li key={inq.id} className="border-t border-slate-100 pt-3 text-sm first:border-0 first:pt-0">
+                  <p className="font-medium text-slate-900">
+                    {inq.name} · {inq.phone}
+                    {inq.email && ` · ${inq.email}`}
+                  </p>
+                  <p className="text-slate-600">{inq.message}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {new Date(inq.createdAt).toLocaleString("en-UG")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
 
-      <NewUnitForm propertyId={property.id} isCommercial={isCommercial} />
+      {!isSale && (
+        <LateFeePolicyForm
+          propertyId={property.id}
+          defaultValues={{
+            lateFeeEnabled: property.lateFeeEnabled,
+            lateFeeType: property.lateFeeType ?? "",
+            lateFeeValue: property.lateFeeValue != null ? Number(property.lateFeeValue) : undefined,
+            lateFeeGraceDays: property.lateFeeGraceDays ?? undefined,
+          }}
+        />
+      )}
 
+      {!isSale && <NewUnitForm propertyId={property.id} isCommercial={isCommercial} />}
+
+      {!isSale && (
       <div className="mt-6 space-y-4">
         {property.units.length === 0 ? (
           <Card>
@@ -178,6 +224,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           })
         )}
       </div>
+      )}
     </DashboardShell>
   );
 }

@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/phone";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
@@ -22,6 +23,11 @@ export const authOptions: AuthOptions = {
 
         const normalized = normalizePhone(credentials.phone);
         if (!normalized) return null;
+
+        const allowed = await checkRateLimit(`login:${normalized}`, 10, 15);
+        if (!allowed) {
+          throw new Error("Too many login attempts. Try again in a few minutes.");
+        }
 
         const user = await prisma.user.findUnique({
           where: { phone: normalized },
