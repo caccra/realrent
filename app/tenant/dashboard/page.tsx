@@ -13,6 +13,7 @@ import { ReviewForm } from "@/components/forms/review-form";
 import { SignedAgreementUpload } from "@/components/forms/signed-agreement-upload";
 import { TenantDocumentsSection } from "@/components/forms/tenant-documents-section";
 import { MessagesPanel } from "@/components/forms/messages-panel";
+import { LeaseLedgerView } from "@/components/lease-ledger-view";
 
 const NAV = [{ href: "/tenant/dashboard", label: "Dashboard" }];
 
@@ -145,6 +146,10 @@ export default async function TenantDashboard() {
                   <PaymentMethodsDisplay landlord={lease.unit.property.landlord} showDetails />
                 </Card>
               )}
+
+              <div className="mb-4">
+                <LeaseLedgerView invoices={lease.invoices} />
+              </div>
 
               <div className="space-y-4">
                 {lease.invoices.map((invoice) => {

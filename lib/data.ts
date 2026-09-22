@@ -249,6 +249,55 @@ export function getCaretakerTenants(caretakerId: string) {
   });
 }
 
+export async function getPropertyMonthlyStatement(propertyId: string, year: number, month: number) {
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 1);
+
+  const property = await prisma.property.findUnique({ where: { id: propertyId } });
+  if (!property) return null;
+
+  const invoices = await prisma.rentInvoice.findMany({
+    where: { lease: { unit: { propertyId } }, dueDate: { gte: start, lt: end } },
+    include: { payments: true, lease: { include: { tenant: true, unit: true } } },
+  });
+
+  const expectedRent = invoices.reduce((sum, inv) => sum + invoiceTotalDue(inv), 0);
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      status: "SUCCESSFUL",
+      paidAt: { gte: start, lt: end },
+      invoice: { lease: { unit: { propertyId } } },
+    },
+    include: { invoice: { include: { lease: { include: { tenant: true, unit: true } } } } },
+  });
+  const collected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const maintenance = await prisma.maintenanceRequest.findMany({
+    where: {
+      propertyId,
+      status: "COMPLETED",
+      completedAt: { gte: start, lt: end },
+      cost: { not: null },
+    },
+  });
+  const maintenanceCost = maintenance.reduce((sum, m) => sum + Number(m.cost ?? 0), 0);
+
+  return {
+    property,
+    periodStart: start,
+    periodEnd: end,
+    expectedRent,
+    collected,
+    outstanding: Math.max(expectedRent - collected, 0),
+    maintenanceCost,
+    netIncome: collected - maintenanceCost,
+    invoices,
+    payments,
+    maintenance,
+  };
+}
+
 export async function getLandlordAnalytics(landlordId: string) {
   const units = await prisma.unit.findMany({
     where: { property: { landlordId } },
@@ -414,6 +463,14 @@ export function getLeaseWithDetails(leaseId: string) {
       },
       rentChanges: { orderBy: { effectiveDate: "asc" } },
       reviews: true,
+      inspections: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          items: true,
+          photos: { orderBy: { createdAt: "asc" } },
+          conductedBy: { select: { name: true } },
+        },
+      },
     },
   });
 }

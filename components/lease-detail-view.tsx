@@ -15,7 +15,11 @@ import { MessagesPanel } from "@/components/forms/messages-panel";
 import { SendReminderButton } from "@/components/forms/send-reminder-button";
 import { DocumentVerifyToggle } from "@/components/forms/document-verify-toggle";
 import { TenantScreeningCard } from "@/components/tenant-screening-card";
+import { LeaseLedgerView } from "@/components/lease-ledger-view";
+import { NewInspectionForm } from "@/components/forms/new-inspection-form";
+import { InspectionView } from "@/components/inspection-view";
 import { TENANT_DOCUMENT_TYPES } from "@/lib/validations/tenant-document";
+import { INSPECTION_TYPES } from "@/lib/validations/inspection";
 import type { getLeaseWithDetails, getTenantScreeningReport } from "@/lib/data";
 
 const STATUS_TONE = {
@@ -41,6 +45,8 @@ export function LeaseDetailView({
   const latestInvoice = lease.invoices[0];
   const canGenerateNext = lease.status === "ACTIVE" && latestInvoice?.status === "PAID";
   const tenantReview = lease.reviews.find((r) => r.direction === "LANDLORD_TO_TENANT");
+  const usedInspectionTypes = new Set(lease.inspections.map((i) => i.type));
+  const availableInspectionTypes = INSPECTION_TYPES.filter((t) => !usedInspectionTypes.has(t.value));
 
   return (
     <>
@@ -153,6 +159,22 @@ export function LeaseDetailView({
 
       {screeningReport && <TenantScreeningCard report={screeningReport} />}
 
+      <div className="mb-6">
+        <h2 className="mb-3 text-lg font-medium text-slate-900">Inspections</h2>
+        <NewInspectionForm leaseId={lease.id} availableTypes={availableInspectionTypes} />
+        {lease.inspections.length === 0 ? (
+          <Card>
+            <p className="text-sm text-slate-500">No inspections recorded yet.</p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {lease.inspections.map((inspection) => (
+              <InspectionView key={inspection.id} inspection={inspection} />
+            ))}
+          </div>
+        )}
+      </div>
+
       <RentChangeSection leaseId={lease.id} rentChanges={lease.rentChanges} />
 
       {canReviewTenant && (
@@ -166,6 +188,10 @@ export function LeaseDetailView({
           />
         </div>
       )}
+
+      <div className="mb-6">
+        <LeaseLedgerView invoices={lease.invoices} />
+      </div>
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-medium text-slate-900">Invoices</h2>

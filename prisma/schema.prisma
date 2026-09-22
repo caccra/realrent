@@ -160,6 +160,7 @@ model User {
   maintenanceRequests   MaintenanceRequest[]  @relation("MaintenanceCreatedBy")
   sentMessages          Message[]             @relation("SentMessages")
   auditLogs             AuditLog[]            @relation("AuditLogActor")
+  inspectionsConducted  Inspection[]          @relation("InspectionsConducted")
 
   @@index([role])
 }
@@ -314,6 +315,7 @@ model Lease {
   complaints   Complaint[]
   rentChanges  RentChange[]
   conversation Conversation?
+  inspections  Inspection[]
 
   @@index([unitId])
   @@index([tenantId])
@@ -530,4 +532,53 @@ model Message {
 
   @@index([conversationId])
   @@index([senderId])
+}
+
+enum InspectionType {
+  MOVE_IN
+  MOVE_OUT
+}
+
+enum InspectionCondition {
+  GOOD
+  FAIR
+  POOR
+}
+
+model Inspection {
+  id            String          @id @default(cuid())
+  leaseId       String
+  lease         Lease           @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  type          InspectionType
+  conductedById String
+  conductedBy   User            @relation("InspectionsConducted", fields: [conductedById], references: [id], onDelete: Cascade)
+  notes         String?
+  createdAt     DateTime        @default(now())
+
+  items  InspectionItem[]
+  photos InspectionPhoto[]
+
+  @@unique([leaseId, type])
+  @@index([leaseId])
+}
+
+model InspectionItem {
+  id           String               @id @default(cuid())
+  inspectionId String
+  inspection   Inspection           @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  label        String
+  condition    InspectionCondition
+  note         String?
+
+  @@index([inspectionId])
+}
+
+model InspectionPhoto {
+  id           String     @id @default(cuid())
+  inspectionId String
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  url          String
+  createdAt    DateTime   @default(now())
+
+  @@index([inspectionId])
 }

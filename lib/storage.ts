@@ -5,6 +5,7 @@ const PROPERTY_BUCKET = "property-images";
 const COMPLAINT_BUCKET = "complaint-images";
 const LEASE_DOCUMENT_BUCKET = "lease-documents";
 const TENANT_DOCUMENT_BUCKET = "tenant-documents";
+const INSPECTION_BUCKET = "inspection-photos";
 
 // Created lazily (not at module load) so importing this file — which Next.js
 // does when statically analyzing API routes at build time — doesn't crash
@@ -47,8 +48,21 @@ export function isAllowedDocument(file: File): string | null {
   return null;
 }
 
+const ensuredBuckets = new Set<string>();
+
+/** Creates the bucket if it doesn't exist yet (idempotent, cached per process). */
+async function ensureBucket(supabaseAdmin: SupabaseClient, bucket: string): Promise<void> {
+  if (ensuredBuckets.has(bucket)) return;
+  const { error } = await supabaseAdmin.storage.createBucket(bucket, { public: true });
+  if (error && !error.message.toLowerCase().includes("already exists")) {
+    throw new Error(error.message);
+  }
+  ensuredBuckets.add(bucket);
+}
+
 async function uploadFile(bucket: string, folder: string, file: File): Promise<string> {
   const supabaseAdmin = getSupabaseAdmin();
+  await ensureBucket(supabaseAdmin, bucket);
   const ext = file.name.split(".").pop() ?? "bin";
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
 
@@ -100,4 +114,12 @@ export function uploadTenantDocument(tenantId: string, file: File): Promise<stri
 
 export function deleteTenantDocumentFile(publicUrl: string): Promise<void> {
   return deleteFile(TENANT_DOCUMENT_BUCKET, publicUrl);
+}
+
+export function uploadInspectionPhoto(inspectionId: string, file: File): Promise<string> {
+  return uploadFile(INSPECTION_BUCKET, inspectionId, file);
+}
+
+export function deleteInspectionPhotoFile(publicUrl: string): Promise<void> {
+  return deleteFile(INSPECTION_BUCKET, publicUrl);
 }

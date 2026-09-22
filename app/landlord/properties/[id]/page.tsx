@@ -100,6 +100,15 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
         </div>
       )}
 
+      {!isSale && (
+        <Link
+          href={`/landlord/properties/${property.id}/statement`}
+          className="mb-4 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800"
+        >
+          View monthly statement →
+        </Link>
+      )}
+
       <PropertyActions
         property={{
           id: property.id,

@@ -2,6 +2,6 @@
 
 import { SecondaryButton } from "@/components/ui";
 
-export function PrintButton() {
-  return <SecondaryButton onClick={() => window.print()}>Print receipt</SecondaryButton>;
+export function PrintButton({ label = "Print receipt" }: { label?: string }) {
+  return <SecondaryButton onClick={() => window.print()}>{label}</SecondaryButton>;
 }
