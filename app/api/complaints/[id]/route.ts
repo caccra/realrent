@@ -16,9 +16,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     where: { id },
     include: { lease: { include: { unit: { include: { property: true } } } } },
   });
+  const isStaff = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
   if (
     !complaint ||
-    !(await canManageProperty(session.user.id, session.user.role, complaint.lease.unit.propertyId))
+    (!isStaff && !(await canManageProperty(session.user.id, session.user.role, complaint.lease.unit.propertyId)))
   ) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

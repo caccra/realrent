@@ -37,6 +37,10 @@ export const authOptions: AuthOptions = {
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
 
+        if (user.suspended) {
+          throw new Error("This account has been suspended. Contact support for help.");
+        }
+
         return {
           id: user.id,
           name: user.name,
@@ -61,6 +65,9 @@ export const authOptions: AuthOptions = {
             email: user.email,
           },
         });
+        if (dbUser.suspended) {
+          throw new Error("This account has been suspended. Contact support for help.");
+        }
         token.id = dbUser.id;
         token.role = dbUser.role;
         token.phone = dbUser.phone;

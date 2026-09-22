@@ -13,9 +13,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const maintenanceRequest = await prisma.maintenanceRequest.findUnique({ where: { id } });
+  const isStaff = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
   if (
     !maintenanceRequest ||
-    !(await canManageProperty(session.user.id, session.user.role, maintenanceRequest.propertyId))
+    (!isStaff && !(await canManageProperty(session.user.id, session.user.role, maintenanceRequest.propertyId)))
   ) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

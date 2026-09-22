@@ -94,6 +94,126 @@ export function getUserAuditLogs(userId: string) {
   });
 }
 
+export async function getAdminOverviewStats() {
+  const [
+    usersByRole,
+    totalProperties,
+    salePropertyCount,
+    activeLeaseCount,
+    revenueAgg,
+    monthRevenueAgg,
+    openComplaintCount,
+    openMaintenanceCount,
+    recentUsers,
+  ] = await Promise.all([
+    prisma.user.groupBy({ by: ["role"], _count: true }),
+    prisma.property.count(),
+    prisma.property.count({ where: { listingType: "SALE" } }),
+    prisma.lease.count({ where: { status: "ACTIVE" } }),
+    prisma.payment.aggregate({ where: { status: "SUCCESSFUL" }, _sum: { amount: true } }),
+    prisma.payment.aggregate({
+      where: { status: "SUCCESSFUL", paidAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
+      _sum: { amount: true },
+    }),
+    prisma.complaint.count({ where: { status: { not: "RESOLVED" } } }),
+    prisma.maintenanceRequest.count({ where: { status: { in: ["OPEN", "SCHEDULED", "IN_PROGRESS"] } } }),
+    prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 8, select: { id: true, name: true, phone: true, role: true, createdAt: true } }),
+  ]);
+
+  const roleCounts: Record<string, number> = {};
+  for (const row of usersByRole) {
+    roleCounts[row.role ?? "UNASSIGNED"] = row._count;
+  }
+
+  return {
+    roleCounts,
+    totalUsers: usersByRole.reduce((sum, r) => sum + r._count, 0),
+    totalProperties,
+    rentalPropertyCount: totalProperties - salePropertyCount,
+    salePropertyCount,
+    activeLeaseCount,
+    totalRevenue: Number(revenueAgg._sum.amount ?? 0),
+    revenueThisMonth: Number(monthRevenueAgg._sum.amount ?? 0),
+    openComplaintCount,
+    openMaintenanceCount,
+    recentUsers,
+  };
+}
+
+export function getAllUsersAdmin() {
+  return prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      role: true,
+      suspended: true,
+      createdAt: true,
+    },
+  });
+}
+
+export async function getUserAdminDetail(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      properties: { select: { id: true, name: true, listingType: true, _count: { select: { units: true } } } },
+      leasesAsTenant: {
+        select: { id: true, status: true, unit: { select: { label: true, property: { select: { name: true } } } } },
+      },
+      caretakerAssignments: { include: { property: { select: { id: true, name: true } } } },
+      documents: { orderBy: { createdAt: "desc" } },
+    },
+  });
+  if (!user) return null;
+
+  const auditLogs = await prisma.auditLog.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
+  return { user, auditLogs };
+}
+
+export function getAllPropertiesAdmin() {
+  return prisma.property.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+    include: {
+      landlord: { select: { name: true, phone: true } },
+      _count: { select: { units: true } },
+    },
+  });
+}
+
+export function getAllComplaintsAdmin() {
+  return prisma.complaint.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+    include: { tenant: true, lease: { include: { unit: { include: { property: true } } } } },
+  });
+}
+
+export function getAllMaintenanceAdmin() {
+  return prisma.maintenanceRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+    include: { property: true, unit: true, createdBy: { select: { name: true } } },
+  });
+}
+
+export function getAllAuditLogsAdmin() {
+  return prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+    include: { user: { select: { name: true, phone: true, role: true } } },
+  });
+}
+
 export function getPropertyInquiries(propertyId: string) {
   return prisma.propertyInquiry.findMany({
     where: { propertyId },

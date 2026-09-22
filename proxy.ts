@@ -5,7 +5,11 @@ const roleHome: Record<string, string> = {
   LANDLORD: "/landlord/dashboard",
   TENANT: "/tenant/dashboard",
   CARETAKER: "/caretaker/dashboard",
+  ADMIN: "/admin/dashboard",
+  SUPER_ADMIN: "/admin/dashboard",
 };
+
+const isAdminRole = (role: string) => role === "ADMIN" || role === "SUPER_ADMIN";
 
 export default withAuth(
   function middleware(req) {
@@ -25,6 +29,9 @@ export default withAuth(
     if (path.startsWith("/caretaker") && role !== "CARETAKER") {
       return NextResponse.redirect(new URL(roleHome[role] ?? "/", req.url));
     }
+    if (path.startsWith("/admin") && !isAdminRole(role)) {
+      return NextResponse.redirect(new URL(roleHome[role] ?? "/", req.url));
+    }
     return NextResponse.next();
   },
   {
@@ -35,5 +42,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/landlord/:path*", "/tenant/:path*", "/caretaker/:path*"],
+  matcher: ["/landlord/:path*", "/tenant/:path*", "/caretaker/:path*", "/admin/:path*"],
 };

@@ -33,20 +33,25 @@ export default function LoginPage() {
 
       if (res?.error) {
         setServerError(
-          res.error.includes("Too many") ? res.error : "Incorrect phone number or password"
+          res.error.includes("Too many") || res.error.includes("suspended")
+            ? res.error
+            : "Incorrect phone number or password"
         );
         return;
       }
 
       const session = await getSession();
       const role = session?.user?.role;
-      const home = !role
-        ? "/onboarding"
-        : role === "LANDLORD"
-          ? "/landlord/dashboard"
-          : role === "CARETAKER"
-            ? "/caretaker/dashboard"
-            : "/tenant/dashboard";
+      const home =
+        !role
+          ? "/onboarding"
+          : role === "LANDLORD"
+            ? "/landlord/dashboard"
+            : role === "CARETAKER"
+              ? "/caretaker/dashboard"
+              : role === "ADMIN" || role === "SUPER_ADMIN"
+                ? "/admin/dashboard"
+                : "/tenant/dashboard";
       router.push(home);
       router.refresh();
     } finally {
