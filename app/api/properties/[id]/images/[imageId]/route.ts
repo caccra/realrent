@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deletePropertyImageFile } from "@/lib/storage";
+import { canManageProperty } from "@/lib/authorization";
 
 export async function PATCH(
   request: Request,
@@ -10,7 +11,7 @@ export async function PATCH(
 ) {
   const { id, imageId } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,7 +19,7 @@ export async function PATCH(
     where: { id: imageId },
     include: { property: true },
   });
-  if (!image || image.propertyId !== id || image.property.landlordId !== session.user.id) {
+  if (!image || image.propertyId !== id || !(await canManageProperty(session.user.id, session.user.role, id))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -41,7 +42,7 @@ export async function DELETE(
 ) {
   const { id, imageId } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -49,7 +50,7 @@ export async function DELETE(
     where: { id: imageId },
     include: { property: true },
   });
-  if (!image || image.propertyId !== id || image.property.landlordId !== session.user.id) {
+  if (!image || image.propertyId !== id || !(await canManageProperty(session.user.id, session.user.role, id))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

@@ -6,7 +6,7 @@ import { Badge, Card } from "@/components/ui";
 import { formatMoney, type Currency } from "@/lib/money";
 import { invoiceDisplayStatus, isInvoiceDueSoon } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 import { SendReminderButton } from "@/components/forms/send-reminder-button";
 
 const STATUS_TONE = {
@@ -23,7 +23,8 @@ function formatByCurrency(entries: { currency: string; amount: number }[]): stri
 }
 
 export default async function LandlordDashboard() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
+  const isLandlord = user.role === "LANDLORD";
   const [properties, invoices, financials] = await Promise.all([
     getLandlordProperties(user.id),
     getLandlordInvoices(user.id),
@@ -50,14 +51,16 @@ export default async function LandlordDashboard() {
   }));
 
   return (
-    <DashboardShell title="Dashboard" userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title="Dashboard" userName={user.name ?? ""} nav={navForRole(user.role)}>
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link
-          href="/landlord/properties/new"
-          className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
-        >
-          Add property
-        </Link>
+        {isLandlord && (
+          <Link
+            href="/landlord/properties/new"
+            className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+          >
+            Add property
+          </Link>
+        )}
         <Link
           href="/landlord/properties"
           className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -197,11 +200,20 @@ export default async function LandlordDashboard() {
       <Card className="mt-3 overflow-hidden p-0">
         {properties.length === 0 ? (
           <p className="p-5 text-sm text-slate-500">
-            No properties yet.{" "}
-            <Link href="/landlord/properties/new" className="font-medium text-emerald-700 hover:text-emerald-800">
-              Add your first one
-            </Link>
-            .
+            {isLandlord ? (
+              <>
+                No properties yet.{" "}
+                <Link
+                  href="/landlord/properties/new"
+                  className="font-medium text-emerald-700 hover:text-emerald-800"
+                >
+                  Add your first one
+                </Link>
+                .
+              </>
+            ) : (
+              "You haven't been appointed to any property yet. Ask the landlord to appoint you using your phone number."
+            )}
           </p>
         ) : (
           <ul className="divide-y divide-slate-100">

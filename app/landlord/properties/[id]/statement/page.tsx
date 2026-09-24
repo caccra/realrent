@@ -5,6 +5,7 @@ import { getPropertyMonthlyStatement } from "@/lib/data";
 import { Card } from "@/components/ui";
 import { formatMoney, type Currency } from "@/lib/money";
 import { PrintButton } from "@/components/print-button";
+import { canManageProperty } from "@/lib/authorization";
 
 /** Most properties collect a single currency; joins the rare mixed case rather than summing raw numbers. */
 function formatByCurrency(entries: { currency: string; amount: number }[]): string {
@@ -26,14 +27,14 @@ export default async function PropertyStatementPage({
 }) {
   const { id } = await params;
   const search = await searchParams;
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
 
   const now = new Date();
   const year = Number(search.year) || now.getFullYear();
   const month = Number(search.month) || now.getMonth() + 1;
 
   const statement = await getPropertyMonthlyStatement(id, year, month);
-  if (!statement || statement.property.landlordId !== user.id) {
+  if (!statement || !(await canManageProperty(user.id, user.role, id))) {
     notFound();
   }
 

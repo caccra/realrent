@@ -2,6 +2,16 @@ import { prisma } from "@/lib/prisma";
 import type { Currency, Prisma, PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 
+/**
+ * Matches a property owned by this user (as landlord) or a property they've
+ * been appointed to manage (as property manager, who gets landlord-equivalent
+ * access). Used to scope every "landlord's data" query so property managers
+ * see exactly what the landlord who appointed them would see.
+ */
+export function landlordOrManagerFilter(userId: string) {
+  return { OR: [{ landlordId: userId }, { propertyManagerAssignments: { some: { managerId: userId } } }] };
+}
+
 export type PublicPropertyFilters = {
   listingType?: PropertyListingType;
   usage?: PropertyUsage;
@@ -261,7 +271,7 @@ export function getPublicPropertyDetail(propertyId: string) {
 
 export function getLandlordProperties(landlordId: string) {
   return prisma.property.findMany({
-    where: { landlordId },
+    where: landlordOrManagerFilter(landlordId),
     orderBy: { createdAt: "desc" },
     include: {
       images: { orderBy: [{ featured: "desc" }, { order: "asc" }], take: 1 },
@@ -281,7 +291,7 @@ export function getLandlordProperties(landlordId: string) {
 
 export function getLandlordInvoices(landlordId: string) {
   return prisma.rentInvoice.findMany({
-    where: { lease: { unit: { property: { landlordId } } } },
+    where: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
     orderBy: { dueDate: "asc" },
     include: {
       lease: {
@@ -306,7 +316,7 @@ export async function getLandlordFinancialSummary(landlordId: string) {
       where: {
         status: "SUCCESSFUL",
         paidAt: { gte: startOfMonth },
-        invoice: { lease: { unit: { property: { landlordId } } } },
+        invoice: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
       },
       _sum: { amount: true },
     }),
@@ -315,7 +325,7 @@ export async function getLandlordFinancialSummary(landlordId: string) {
       where: {
         status: "SUCCESSFUL",
         paidAt: { gte: startOfYear },
-        invoice: { lease: { unit: { property: { landlordId } } } },
+        invoice: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
       },
       _sum: { amount: true },
     }),
@@ -329,7 +339,7 @@ export async function getLandlordFinancialSummary(landlordId: string) {
 
 export function getLandlordTenants(landlordId: string) {
   return prisma.lease.findMany({
-    where: { unit: { property: { landlordId } } },
+    where: { unit: { property: landlordOrManagerFilter(landlordId) } },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: {
       tenant: true,
@@ -341,7 +351,7 @@ export function getLandlordTenants(landlordId: string) {
 
 export function getLandlordPayments(landlordId: string) {
   return prisma.payment.findMany({
-    where: { invoice: { lease: { unit: { property: { landlordId } } } } },
+    where: { invoice: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } } },
     orderBy: { paidAt: "desc" },
     include: {
       receipt: true,
@@ -454,7 +464,7 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
 
 export async function getLandlordAnalytics(landlordId: string) {
   const units = await prisma.unit.findMany({
-    where: { property: { landlordId } },
+    where: { property: landlordOrManagerFilter(landlordId) },
     select: { id: true, status: true, propertyId: true, property: { select: { name: true } } },
   });
 
@@ -487,7 +497,7 @@ export async function getLandlordAnalytics(landlordId: string) {
     where: {
       status: "SUCCESSFUL",
       paidAt: { gte: months[0].start },
-      invoice: { lease: { unit: { property: { landlordId } } } },
+      invoice: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
     },
     select: { amount: true, paidAt: true, method: true, currency: true },
   });
@@ -525,7 +535,7 @@ export async function getLandlordAnalytics(landlordId: string) {
   }));
 
   const openInvoices = await prisma.rentInvoice.findMany({
-    where: { status: { not: "PAID" }, lease: { unit: { property: { landlordId } } } },
+    where: { status: { not: "PAID" }, lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
     include: {
       payments: true,
       lease: { include: { tenant: true, unit: { include: { property: true } } } },
@@ -578,7 +588,7 @@ export async function getLandlordAnalytics(landlordId: string) {
 
 export function getLandlordMaintenanceRequests(landlordId: string) {
   return prisma.maintenanceRequest.findMany({
-    where: { property: { landlordId } },
+    where: { property: landlordOrManagerFilter(landlordId) },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: { property: true, unit: true, createdBy: { select: { name: true } } },
   });
@@ -766,7 +776,7 @@ export async function getPropertyReviews(propertyId: string) {
 
 export function getLandlordComplaints(landlordId: string) {
   return prisma.complaint.findMany({
-    where: { lease: { unit: { property: { landlordId } } } },
+    where: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
     orderBy: { createdAt: "desc" },
     include: { tenant: true, lease: { include: { unit: { include: { property: true } } } } },
   });

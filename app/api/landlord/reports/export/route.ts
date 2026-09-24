@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getManagedPropertyIds } from "@/lib/authorization";
 
 function csvCell(value: string): string {
   if (/[",\n]/.test(value)) {
@@ -12,12 +13,13 @@ function csvCell(value: string): string {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user || (session.user.role !== "LANDLORD" && session.user.role !== "PROPERTY_MANAGER")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const propertyIds = await getManagedPropertyIds(session.user.id, session.user.role);
   const payments = await prisma.payment.findMany({
-    where: { invoice: { lease: { unit: { property: { landlordId: session.user.id } } } } },
+    where: { invoice: { lease: { unit: { property: { id: { in: propertyIds } } } } } },
     orderBy: { paidAt: "desc" },
     include: {
       invoice: {

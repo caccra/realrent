@@ -3,16 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { unitSchema } from "@/lib/validations/property";
+import { canManageProperty } from "@/lib/authorization";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const unit = await prisma.unit.findUnique({ where: { id }, include: { property: true } });
-  if (!unit || unit.property.landlordId !== session.user.id) {
+  if (!unit || !(await canManageProperty(session.user.id, session.user.role, unit.propertyId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -44,12 +45,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const unit = await prisma.unit.findUnique({ where: { id }, include: { property: true } });
-  if (!unit || unit.property.landlordId !== session.user.id) {
+  if (!unit || !(await canManageProperty(session.user.id, session.user.role, unit.propertyId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

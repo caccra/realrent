@@ -3,10 +3,10 @@ import { getLandlordMaintenanceRequests, getLandlordProperties } from "@/lib/dat
 import { DashboardShell } from "@/components/dashboard-shell";
 import { NewMaintenanceRequestForm } from "@/components/forms/new-maintenance-request-form";
 import { MaintenanceList } from "@/components/maintenance-list";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 
 export default async function LandlordMaintenancePage() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
   const [requests, properties] = await Promise.all([
     getLandlordMaintenanceRequests(user.id),
     getLandlordProperties(user.id),
@@ -19,7 +19,7 @@ export default async function LandlordMaintenancePage() {
   }));
 
   return (
-    <DashboardShell title="Maintenance" userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title="Maintenance" userName={user.name ?? ""} nav={navForRole(user.role)}>
       <NewMaintenanceRequestForm properties={propertyOptions} />
       <MaintenanceList requests={requests} />
     </DashboardShell>

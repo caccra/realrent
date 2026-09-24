@@ -5,27 +5,32 @@ import { getLandlordProperties } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
 import { PROPERTY_USAGES } from "@/lib/validations/property";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
 import { formatMoney } from "@/lib/money";
 
 export default async function PropertiesPage() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
+  const isLandlord = user.role === "LANDLORD";
   const properties = await getLandlordProperties(user.id);
 
   return (
-    <DashboardShell title="Properties" userName={user.name ?? ""} nav={LANDLORD_NAV}>
-      <Link
-        href="/landlord/properties/new"
-        className="mb-6 inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
-      >
-        Add property
-      </Link>
+    <DashboardShell title="Properties" userName={user.name ?? ""} nav={navForRole(user.role)}>
+      {isLandlord && (
+        <Link
+          href="/landlord/properties/new"
+          className="mb-6 inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+        >
+          Add property
+        </Link>
+      )}
 
       {properties.length === 0 ? (
         <Card>
           <p className="text-sm text-slate-500">
-            No properties yet. Add your first property to start creating units and leases.
+            {isLandlord
+              ? "No properties yet. Add your first property to start creating units and leases."
+              : "You haven't been appointed to any property yet. Ask the landlord to appoint you using your phone number."}
           </p>
         </Card>
       ) : (

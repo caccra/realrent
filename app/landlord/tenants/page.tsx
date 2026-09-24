@@ -5,12 +5,12 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 
 export default async function TenantsPage() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
   const leases = await getLandlordTenants(user.id);
 
   const rows = leases.map((lease) => {
@@ -22,7 +22,7 @@ export default async function TenantsPage() {
   });
 
   return (
-    <DashboardShell title="Tenants" userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title="Tenants" userName={user.name ?? ""} nav={navForRole(user.role)}>
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-slate-500">
           {rows.length} tenant lease{rows.length === 1 ? "" : "s"} across all your properties.

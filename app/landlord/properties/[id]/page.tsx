@@ -10,23 +10,27 @@ import { PropertyActions } from "@/components/forms/property-actions";
 import { UnitActions } from "@/components/forms/unit-actions";
 import { PropertyPhotos } from "@/components/forms/property-photos";
 import { CaretakerSection } from "@/components/forms/caretaker-section";
+import { PropertyManagerSection } from "@/components/forms/property-manager-section";
 import { LateFeePolicyForm } from "@/components/forms/late-fee-policy-form";
 import { formatMoney } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 import { unitDetailLine } from "@/lib/unit-details";
 import { getPropertyInquiries, getPropertyReviews } from "@/lib/data";
+import { canManageProperty } from "@/lib/authorization";
 import { StarRating } from "@/components/star-rating";
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
+  const isLandlord = user.role === "LANDLORD";
 
   const property = await prisma.property.findUnique({
     where: { id },
     include: {
       images: { orderBy: [{ featured: "desc" }, { order: "asc" }] },
       caretakerAssignments: { include: { caretaker: true }, orderBy: { createdAt: "asc" } },
+      propertyManagerAssignments: { include: { manager: true }, orderBy: { createdAt: "asc" } },
       units: {
         orderBy: { label: "asc" },
         include: {
@@ -41,7 +45,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
     },
   });
 
-  if (!property || property.landlordId !== user.id) {
+  if (!property || !(await canManageProperty(user.id, user.role, property.id))) {
     notFound();
   }
 
@@ -53,7 +57,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const inquiries = isSale ? await getPropertyInquiries(property.id) : [];
 
   return (
-    <DashboardShell title={property.name} userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title={property.name} userName={user.name ?? ""} nav={navForRole(user.role)}>
       <div className="mb-1 flex items-center justify-between">
         <p className="text-sm text-slate-500">
           {property.address}
@@ -126,11 +130,17 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           saleBathrooms: property.saleBathrooms ?? undefined,
         }}
         unitCount={property.units.length}
+        canDelete={isLandlord}
       />
 
       <PropertyPhotos propertyId={property.id} images={property.images} />
 
-      <CaretakerSection propertyId={property.id} caretakers={property.caretakerAssignments} />
+      {isLandlord && (
+        <>
+          <CaretakerSection propertyId={property.id} caretakers={property.caretakerAssignments} />
+          <PropertyManagerSection propertyId={property.id} managers={property.propertyManagerAssignments} />
+        </>
+      )}
 
       {isSale && (
         <Card className="mb-6">

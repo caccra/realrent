@@ -13,13 +13,14 @@ type ProvisionResult =
 
 /**
  * Finds an existing user by phone with the given role, or creates one with a
- * generated temporary password. Used when a landlord names a tenant or
- * caretaker by phone number who may not have an account yet.
+ * generated temporary password. Used when a landlord names a tenant,
+ * caretaker, or property manager by phone number who may not have an
+ * account yet.
  */
 export async function findOrCreateUserByPhone(
   rawPhone: string,
   name: string,
-  role: "TENANT" | "CARETAKER"
+  role: "TENANT" | "CARETAKER" | "PROPERTY_MANAGER"
 ): Promise<ProvisionResult> {
   const normalizedPhone = normalizePhone(rawPhone);
   if (!normalizedPhone) {

@@ -2,7 +2,9 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 
-export async function requireUser(role?: "LANDLORD" | "TENANT" | "CARETAKER" | "ADMIN" | "SUPER_ADMIN") {
+type UserRole = "LANDLORD" | "TENANT" | "CARETAKER" | "PROPERTY_MANAGER" | "ADMIN" | "SUPER_ADMIN";
+
+export async function requireUser(role?: UserRole | UserRole[]) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     redirect("/login");
@@ -10,7 +12,8 @@ export async function requireUser(role?: "LANDLORD" | "TENANT" | "CARETAKER" | "
   if (!session.user.role) {
     redirect("/onboarding");
   }
-  if (role && session.user.role !== role) {
+  const allowed = Array.isArray(role) ? role : role ? [role] : null;
+  if (allowed && !allowed.includes(session.user.role as UserRole)) {
     redirect("/login");
   }
   return session.user;

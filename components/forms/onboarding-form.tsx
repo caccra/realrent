@@ -11,6 +11,8 @@ import { Button, FieldError, Input, Label, Select } from "@/components/ui";
 const roleHome: Record<string, string> = {
   LANDLORD: "/landlord/dashboard",
   TENANT: "/tenant/dashboard",
+  CARETAKER: "/caretaker/dashboard",
+  PROPERTY_MANAGER: "/landlord/dashboard",
 };
 
 export function OnboardingForm({ defaultName }: { defaultName: string }) {
@@ -58,6 +60,8 @@ export function OnboardingForm({ defaultName }: { defaultName: string }) {
         <Select id="role" {...register("role")}>
           <option value="LANDLORD">Landlord</option>
           <option value="TENANT">Tenant</option>
+          <option value="PROPERTY_MANAGER">Property manager</option>
+          <option value="CARETAKER">Caretaker</option>
         </Select>
       </div>
 

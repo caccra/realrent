@@ -4,7 +4,7 @@ import { getLandlordAnalytics } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card } from "@/components/ui";
 import { formatMoney, type Currency } from "@/lib/money";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
 
 const METHOD_LABELS: Record<string, string> = {
   CASH: "Cash",
@@ -19,12 +19,12 @@ function formatByCurrency(entries: { currency: string; amount: number }[]): stri
 }
 
 export default async function ReportsPage() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
   const analytics = await getLandlordAnalytics(user.id);
   const maxTrend = Math.max(1, ...analytics.trend.map((t) => t.amount));
 
   return (
-    <DashboardShell title="Reports" userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title="Reports" userName={user.name ?? ""} nav={navForRole(user.role)}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">Occupancy, collections, and arrears across your portfolio.</p>
         <div className="flex gap-2">

@@ -8,6 +8,7 @@ const roleHome: Record<string, string> = {
   LANDLORD: "/landlord/dashboard",
   TENANT: "/tenant/dashboard",
   CARETAKER: "/caretaker/dashboard",
+  PROPERTY_MANAGER: "/landlord/dashboard",
 };
 
 export default async function OnboardingPage() {

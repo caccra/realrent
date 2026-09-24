@@ -5,7 +5,7 @@ export const registerSchema = z.object({
   phone: z.string().trim().min(9, "Enter a valid phone number"),
   email: z.string().trim().email().optional().or(z.literal("")),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["LANDLORD", "TENANT"]),
+  role: z.enum(["LANDLORD", "TENANT", "CARETAKER", "PROPERTY_MANAGER"]),
   agreedToTerms: z.literal(true, "You must agree to the Terms of Service and Privacy Policy"),
 });
 

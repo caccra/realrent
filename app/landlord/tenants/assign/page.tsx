@@ -3,14 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { AssignTenantForm } from "@/components/forms/assign-tenant-form";
 import { Card } from "@/components/ui";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
+import { landlordOrManagerFilter } from "@/lib/data";
 import Link from "next/link";
 
 export default async function AssignTenantPage() {
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
 
   const properties = await prisma.property.findMany({
-    where: { landlordId: user.id, units: { some: { status: "VACANT" } } },
+    where: { ...landlordOrManagerFilter(user.id), units: { some: { status: "VACANT" } } },
     orderBy: { name: "asc" },
     include: {
       units: {
@@ -21,7 +22,7 @@ export default async function AssignTenantPage() {
   });
 
   return (
-    <DashboardShell title="Assign a tenant" userName={user.name ?? ""} nav={LANDLORD_NAV}>
+    <DashboardShell title="Assign a tenant" userName={user.name ?? ""} nav={navForRole(user.role)}>
       {properties.length === 0 ? (
         <Card>
           <p className="text-sm text-slate-500">

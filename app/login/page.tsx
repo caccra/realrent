@@ -45,7 +45,7 @@ export default function LoginPage() {
       const home =
         !role
           ? "/onboarding"
-          : role === "LANDLORD"
+          : role === "LANDLORD" || role === "PROPERTY_MANAGER"
             ? "/landlord/dashboard"
             : role === "CARETAKER"
               ? "/caretaker/dashboard"

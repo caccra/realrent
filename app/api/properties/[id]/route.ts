@@ -5,16 +5,17 @@ import { prisma } from "@/lib/prisma";
 import { propertySchema } from "@/lib/validations/property";
 import { deletePropertyImageFile } from "@/lib/storage";
 import { logAudit } from "@/lib/audit-log";
+import { canManageProperty } from "@/lib/authorization";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const property = await prisma.property.findUnique({ where: { id } });
-  if (!property || property.landlordId !== session.user.id) {
+  if (!property || !(await canManageProperty(session.user.id, session.user.role, id))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

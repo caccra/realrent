@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 const roleHome: Record<string, string> = {
   LANDLORD: "/landlord/dashboard",
+  PROPERTY_MANAGER: "/landlord/dashboard",
   TENANT: "/tenant/dashboard",
   CARETAKER: "/caretaker/dashboard",
   ADMIN: "/admin/dashboard",
@@ -20,7 +21,7 @@ export default withAuth(
     if (!role) {
       return NextResponse.redirect(new URL("/onboarding", req.url));
     }
-    if (path.startsWith("/landlord") && role !== "LANDLORD") {
+    if (path.startsWith("/landlord") && role !== "LANDLORD" && role !== "PROPERTY_MANAGER") {
       return NextResponse.redirect(new URL(roleHome[role] ?? "/", req.url));
     }
     if (path.startsWith("/tenant") && role !== "TENANT") {

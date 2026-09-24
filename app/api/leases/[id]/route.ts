@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { endLeaseSchema } from "@/lib/validations/lease";
 import { logAudit } from "@/lib/audit-log";
+import { canManageProperty } from "@/lib/authorization";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "LANDLORD") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,7 +19,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     where: { id },
     include: { unit: { include: { property: true } } },
   });
-  if (!lease || lease.unit.property.landlordId !== session.user.id) {
+  if (!lease || !(await canManageProperty(session.user.id, session.user.role, lease.unit.propertyId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

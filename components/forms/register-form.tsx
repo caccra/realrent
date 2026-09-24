@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -10,21 +10,35 @@ import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { Button, Card, FieldError, Input, Label, Select } from "@/components/ui";
 import { GoogleSignInButton } from "@/components/forms/google-signin-button";
 
+const ROLE_HOME: Record<string, string> = {
+  LANDLORD: "/landlord/dashboard",
+  TENANT: "/tenant/dashboard",
+  CARETAKER: "/caretaker/dashboard",
+  PROPERTY_MANAGER: "/landlord/dashboard",
+};
+
+const VALID_ROLES = ["LANDLORD", "TENANT", "CARETAKER", "PROPERTY_MANAGER"];
+
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const defaultRole = searchParams.get("role") === "TENANT" ? "TENANT" : "LANDLORD";
+  const roleParam = searchParams.get("role");
+  const defaultRole = VALID_ROLES.includes(roleParam ?? "") ? (roleParam as RegisterInput["role"]) : "LANDLORD";
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: { role: defaultRole },
   });
+
+  const selectedRole = useWatch({ control, name: "role" });
+  const needsAppointment = selectedRole === "PROPERTY_MANAGER" || selectedRole === "CARETAKER";
 
   async function onSubmit(data: RegisterInput) {
     setServerError(null);
@@ -52,7 +66,7 @@ export function RegisterForm() {
         return;
       }
 
-      router.push(data.role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard");
+      router.push(ROLE_HOME[data.role] ?? "/tenant/dashboard");
       router.refresh();
     } finally {
       setSubmitting(false);
@@ -62,7 +76,7 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md">
       <h1 className="text-xl font-semibold text-slate-900">Create your account</h1>
-      <p className="mt-1 text-sm text-slate-500">Free for landlords and tenants.</p>
+      <p className="mt-1 text-sm text-slate-500">Free for landlords, tenants, property managers, and caretakers.</p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <div>
@@ -70,7 +84,15 @@ export function RegisterForm() {
           <Select id="role" {...register("role")}>
             <option value="LANDLORD">Landlord</option>
             <option value="TENANT">Tenant</option>
+            <option value="PROPERTY_MANAGER">Property manager</option>
+            <option value="CARETAKER">Caretaker</option>
           </Select>
+          {needsAppointment && (
+            <p className="mt-1 text-xs text-slate-400">
+              After signing up, a landlord will need to appoint you to a property using your phone
+              number before you can see anything.
+            </p>
+          )}
         </div>
 
         <div>

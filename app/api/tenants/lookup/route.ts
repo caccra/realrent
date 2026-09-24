@@ -7,7 +7,8 @@ import { getTenantScreeningReport } from "@/lib/data";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user.role !== "LANDLORD" && session.user.role !== "CARETAKER")) {
+  const allowedRoles = ["LANDLORD", "PROPERTY_MANAGER", "CARETAKER"];
+  if (!session?.user || !allowedRoles.includes(session.user.role ?? "")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

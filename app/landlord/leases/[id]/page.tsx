@@ -3,14 +3,15 @@ import { requireUser } from "@/lib/session";
 import { getLeaseWithDetails, getTenantScreeningReport } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { LeaseDetailView } from "@/components/lease-detail-view";
-import { LANDLORD_NAV } from "@/lib/landlord-nav";
+import { navForRole } from "@/lib/landlord-nav";
+import { canManageProperty } from "@/lib/authorization";
 
 export default async function LeaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await requireUser("LANDLORD");
+  const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
 
   const lease = await getLeaseWithDetails(id);
-  if (!lease || lease.unit.property.landlordId !== user.id) {
+  if (!lease || !(await canManageProperty(user.id, user.role, lease.unit.propertyId))) {
     notFound();
   }
 
@@ -20,7 +21,7 @@ export default async function LeaseDetailPage({ params }: { params: Promise<{ id
     <DashboardShell
       title={`${lease.unit.property.name} — ${lease.unit.label}`}
       userName={user.name ?? ""}
-      nav={LANDLORD_NAV}
+      nav={navForRole(user.role)}
     >
       <LeaseDetailView
         lease={lease}

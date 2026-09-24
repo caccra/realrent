@@ -9,9 +9,11 @@ import type { PropertyInput } from "@/lib/validations/property";
 export function PropertyActions({
   property,
   unitCount,
+  canDelete = true,
 }: {
   property: { id: string } & PropertyInput;
   unitCount: number;
+  canDelete?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -43,7 +45,7 @@ export function PropertyActions({
   return (
     <div className="mb-6 flex flex-wrap items-center gap-3">
       <SecondaryButton onClick={() => setEditing(true)}>Edit property</SecondaryButton>
-      <DeletePropertyButton propertyId={property.id} unitCount={unitCount} />
+      {canDelete && <DeletePropertyButton propertyId={property.id} unitCount={unitCount} />}
     </div>
   );
 }
