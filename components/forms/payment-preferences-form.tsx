@@ -75,7 +75,7 @@ export function PaymentPreferencesForm({ defaultValues }: { defaultValues: Payme
             Mobile Money
           </label>
           {acceptsMobileMoney && (
-            <div className="grid grid-cols-2 gap-3 pl-6">
+            <div className="grid grid-cols-1 gap-3 pl-6 sm:grid-cols-2">
               <div>
                 <Label htmlFor="momoProvider">Provider</Label>
                 <Select id="momoProvider" {...register("momoProvider")}>
@@ -103,7 +103,7 @@ export function PaymentPreferencesForm({ defaultValues }: { defaultValues: Payme
             Bank transfer
           </label>
           {acceptsBankTransfer && (
-            <div className="grid grid-cols-2 gap-3 pl-6">
+            <div className="grid grid-cols-1 gap-3 pl-6 sm:grid-cols-2">
               <div>
                 <Label htmlFor="bankName">Bank name</Label>
                 <Input id="bankName" placeholder="Stanbic Bank" {...register("bankName")} />
@@ -124,7 +124,7 @@ export function PaymentPreferencesForm({ defaultValues }: { defaultValues: Payme
         </div>
 
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-        {saved && !serverError && <p className="text-sm text-emerald-700">Saved.</p>}
+        {saved && !serverError && <p className="text-sm text-ivy-700">Saved.</p>}
 
         <Button type="submit" disabled={submitting}>
           {submitting ? "Saving…" : "Save payment methods"}

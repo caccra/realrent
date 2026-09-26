@@ -4,17 +4,44 @@
   --background: #ffffff;
   --foreground: #171717;
   color-scheme: light;
+
+  /* Kezavi brand palette */
+  --brand-clay: #e8804a;
+  --brand-ink: #0f1e1a;
+  --brand-mint: #e3eee7;
+  --brand-sand: #f6f4ee;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-figtree);
+  --font-heading: var(--font-bricolage);
   --font-mono: var(--font-geist-mono);
+
+  --color-clay: var(--brand-clay);
+  --color-ink: var(--brand-ink);
+  --color-mint: var(--brand-mint);
+  --color-sand: var(--brand-sand);
+
+  /* Brand green ramp — a custom hue (not Tailwind's default emerald),
+     anchored so ivy-700 and ivy-900 exactly match the brand's Ivy
+     (#1B4D3A) and Deep Ivy (#0F2A20) swatches. */
+  --color-ivy-50: #f1f9f6;
+  --color-ivy-100: #def2ea;
+  --color-ivy-200: #bbe7d6;
+  --color-ivy-300: #8ed7bb;
+  --color-ivy-400: #59c59b;
+  --color-ivy-500: #389f77;
+  --color-ivy-600: #287155;
+  --color-ivy-700: #1b4d3a;
+  --color-ivy-800: #153b2e;
+  --color-ivy-900: #0f2a20;
+  --color-ivy-950: #091b14;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

@@ -71,7 +71,7 @@ export function ComplaintStatusForm({
           <FieldError message={errors.resolutionNote?.message} />
         </div>
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-        {saved && !serverError && <p className="text-sm text-emerald-700">Saved.</p>}
+        {saved && !serverError && <p className="text-sm text-ivy-700">Saved.</p>}
         <Button type="submit" disabled={submitting}>
           {submitting ? "Saving…" : "Save"}
         </Button>

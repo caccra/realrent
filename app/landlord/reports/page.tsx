@@ -22,6 +22,7 @@ export default async function ReportsPage() {
   const user = await requireUser(["LANDLORD", "PROPERTY_MANAGER"]);
   const analytics = await getLandlordAnalytics(user.id);
   const maxTrend = Math.max(1, ...analytics.trend.map((t) => t.amount));
+  const maxRevenueByProperty = Math.max(1, ...analytics.revenueByProperty.map((p) => p.amount));
 
   return (
     <DashboardShell title="Reports" userName={user.name ?? ""} nav={navForRole(user.role)}>
@@ -55,7 +56,7 @@ export default async function ReportsPage() {
         </Card>
         <Card>
           <p className="text-xs font-medium text-slate-500">Collected this month</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-700">
+          <p className="mt-1 text-2xl font-semibold text-ivy-700">
             {formatMoney(analytics.trend[analytics.trend.length - 1]?.amount ?? 0, analytics.primaryCurrency)}
           </p>
         </Card>
@@ -83,7 +84,7 @@ export default async function ReportsPage() {
             <div key={t.label} className="flex flex-1 flex-col items-center gap-1">
               <div className="flex w-full flex-1 items-end">
                 <div
-                  className="w-full rounded-t bg-emerald-600"
+                  className="w-full rounded-t bg-ivy-600"
                   style={{ height: `${Math.max(4, (t.amount / maxTrend) * 100)}%` }}
                   title={formatMoney(t.amount, analytics.primaryCurrency)}
                 />
@@ -92,6 +93,77 @@ export default async function ReportsPage() {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="mb-3 text-sm font-medium text-slate-900">
+          Revenue by property — last 6 months ({analytics.primaryCurrency})
+        </h2>
+        {analytics.revenueByProperty.length === 0 ? (
+          <p className="text-sm text-slate-500">No payments recorded yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {analytics.revenueByProperty.map((p) => (
+              <div key={p.id}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-700">{p.name}</span>
+                  <span className="text-slate-500">{formatMoney(p.amount, analytics.primaryCurrency)}</span>
+                </div>
+                <div className="mt-1 h-2 w-full rounded-full bg-slate-100">
+                  <div
+                    className="h-2 rounded-full bg-ivy-600"
+                    style={{ width: `${(p.amount / maxRevenueByProperty) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="mb-1 text-sm font-medium text-slate-900">Vacancy trend — last 6 months</h2>
+        <p className="mb-4 text-xs text-slate-400">
+          Approximated from lease date ranges against your current unit count.
+        </p>
+        <div className="flex items-end gap-3" style={{ height: 140 }}>
+          {analytics.vacancyTrend.map((t) => (
+            <div key={t.label} className="flex flex-1 flex-col items-center gap-1">
+              <div className="flex w-full flex-1 items-end">
+                <div
+                  className="w-full rounded-t bg-ivy-600"
+                  style={{ height: `${Math.max(4, t.occupancyRate * 100)}%` }}
+                  title={`${(t.occupancyRate * 100).toFixed(0)}% occupied`}
+                />
+              </div>
+              <span className="text-xs text-slate-500">{t.label}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="mb-3 text-sm font-medium text-slate-900">Leases expiring in the next 90 days</h2>
+        {analytics.leaseExpirationTimeline.length === 0 ? (
+          <p className="text-sm text-slate-500">No leases expiring soon.</p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {analytics.leaseExpirationTimeline.map((l) => (
+              <li key={l.leaseId} className="flex items-center justify-between border-t border-slate-100 pt-2 first:border-0 first:pt-0">
+                <div>
+                  <span className="text-slate-900">{l.tenantName}</span>
+                  <span className="text-slate-500"> · {l.propertyLabel}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-700">{new Date(l.endDate).toLocaleDateString("en-UG")}</span>
+                  <span className="ml-2 text-xs text-slate-400">
+                    ({l.daysUntilEnd} day{l.daysUntilEnd === 1 ? "" : "s"})
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <Card className="mt-6">
@@ -109,7 +181,7 @@ export default async function ReportsPage() {
                   </span>
                 </div>
                 <div className="mt-1 h-2 w-full rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-emerald-600" style={{ width: `${m.share * 100}%` }} />
+                  <div className="h-2 rounded-full bg-ivy-600" style={{ width: `${m.share * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -133,7 +205,7 @@ export default async function ReportsPage() {
                 </div>
                 <div className="mt-1 h-2 w-full rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-emerald-600"
+                    className="h-2 rounded-full bg-ivy-600"
                     style={{ width: `${p.total > 0 ? (p.occupied / p.total) * 100 : 0}%` }}
                   />
                 </div>

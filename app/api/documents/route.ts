@@ -4,10 +4,11 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { tenantDocumentSchema } from "@/lib/validations/tenant-document";
 import { isAllowedDocument, uploadTenantDocument } from "@/lib/storage";
+import { withErrorHandling } from "@/lib/api-handler";
 
 const MAX_DOCUMENTS = 12;
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request) => {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "TENANT") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -47,4 +48,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(document);
-}
+});

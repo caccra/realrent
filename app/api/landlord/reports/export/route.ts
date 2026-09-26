@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getManagedPropertyIds } from "@/lib/authorization";
+import { withErrorHandling } from "@/lib/api-handler";
 
 function csvCell(value: string): string {
   if (/[",\n]/.test(value)) {
@@ -11,7 +12,7 @@ function csvCell(value: string): string {
   return value;
 }
 
-export async function GET() {
+export const GET = withErrorHandling(async () => {
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user.role !== "LANDLORD" && session.user.role !== "PROPERTY_MANAGER")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,4 +51,4 @@ export async function GET() {
       "Content-Disposition": `attachment; filename="payments-${new Date().toISOString().slice(0, 10)}.csv"`,
     },
   });
-}
+});

@@ -35,6 +35,7 @@ enum PropertyType {
   MALL
   ARCADE
   RENTAL_UNITS
+  WAREHOUSE
 }
 
 enum PropertyUsage {
@@ -105,6 +106,10 @@ enum NotificationType {
   NEW_MESSAGE
   PROPERTY_INQUIRY
   DOCUMENT_VERIFIED
+  LEASE_EXPIRING
+  VIEWING_REQUESTED
+  INVOICE_GENERATED
+  PAYMENT_RECEIVED
 }
 
 enum TenantDocumentType {
@@ -134,13 +139,36 @@ enum MaintenancePriority {
   URGENT
 }
 
+enum ExpenseCategory {
+  UTILITIES
+  STAFF
+  TAXES
+  INSURANCE
+  MANAGEMENT_FEE
+  OTHER
+}
+
+enum InquiryStatus {
+  NEW
+  VIEWING_CONFIRMED
+  VIEWING_RESCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum ContactMessageStatus {
+  NEW
+  RESOLVED
+}
+
 model User {
-  id           String  @id @default(cuid())
-  name         String
-  phone        String? @unique
-  email        String? @unique
-  passwordHash String?
-  role         Role?
+  id             String  @id @default(cuid())
+  name           String
+  phone          String? @unique
+  email          String? @unique
+  whatsappNumber String?
+  passwordHash   String?
+  role           Role?
 
   acceptsCash         Boolean @default(true)
   acceptsMobileMoney  Boolean @default(false)
@@ -154,6 +182,10 @@ model User {
   suspended       Boolean   @default(false)
   suspendedAt     DateTime?
   suspendedReason String?
+
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorEnabledAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,6 +206,8 @@ model User {
   sentMessages               Message[]                   @relation("SentMessages")
   auditLogs                  AuditLog[]                  @relation("AuditLogActor")
   inspectionsConducted       Inspection[]                @relation("InspectionsConducted")
+  expensesRecorded           Expense[]                   @relation("ExpenseRecordedBy")
+  leaseSignatures            LeaseSignature[]            @relation("LeaseSignatures")
 
   @@index([role])
 }
@@ -237,6 +271,9 @@ model Property {
 
   viewCount Int @default(0)
 
+  active            Boolean @default(true)
+  deactivatedReason String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -247,21 +284,56 @@ model Property {
   maintenanceRequests        MaintenanceRequest[]
   reviews                    Review[]
   inquiries                  PropertyInquiry[]
+  expenses                   Expense[]
 
   @@index([landlordId])
 }
 
+model ContactMessage {
+  id        String               @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    ContactMessageStatus @default(NEW)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
 model PropertyInquiry {
-  id         String   @id @default(cuid())
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  name       String
-  phone      String
-  email      String?
-  message    String
-  createdAt  DateTime @default(now())
+  id                 String        @id @default(cuid())
+  propertyId         String
+  property           Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name               String
+  phone              String
+  email              String?
+  message            String
+  requestedViewingAt DateTime?
+  status             InquiryStatus @default(NEW)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@index([propertyId])
+}
+
+model Expense {
+  id           String          @id @default(cuid())
+  propertyId   String
+  property     Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  category     ExpenseCategory
+  description  String?
+  amount       Decimal         @db.Decimal(12, 2)
+  currency     Currency        @default(UGX)
+  vendor       String?
+  incurredAt   DateTime
+  receiptUrl   String?
+  recordedById String?
+  recordedBy   User?           @relation("ExpenseRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime        @default(now())
+
+  @@index([propertyId])
+  @@index([incurredAt])
 }
 
 model PropertyImage {
@@ -333,9 +405,25 @@ model Lease {
   rentChanges  RentChange[]
   conversation Conversation?
   inspections  Inspection[]
+  signatures   LeaseSignature[]
 
   @@index([unitId])
   @@index([tenantId])
+}
+
+model LeaseSignature {
+  id         String   @id @default(cuid())
+  leaseId    String
+  lease      Lease    @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  signerId   String
+  signer     User     @relation("LeaseSignatures", fields: [signerId], references: [id], onDelete: Cascade)
+  signerRole String
+  typedName  String
+  ipAddress  String?
+  signedAt   DateTime @default(now())
+
+  @@unique([leaseId, signerId])
+  @@index([leaseId])
 }
 
 model RentChange {
@@ -414,6 +502,7 @@ model Notification {
 
 model RentInvoice {
   id            String        @id @default(cuid())
+  invoiceNumber String?       @unique
   leaseId       String
   lease         Lease         @relation(fields: [leaseId], references: [id], onDelete: Cascade)
   periodStart   DateTime

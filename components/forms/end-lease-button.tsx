@@ -68,7 +68,7 @@ export function EndLeaseButton({
         End this lease and settle the security deposit ({formatMoney(depositAmount, currency)})
       </p>
       <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <Label htmlFor="depositDeductions">Deductions ({currency})</Label>
             <Input id="depositDeductions" type="number" min={0} {...register("depositDeductions")} />

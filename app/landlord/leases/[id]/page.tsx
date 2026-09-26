@@ -27,7 +27,11 @@ export default async function LeaseDetailPage({ params }: { params: Promise<{ id
         lease={lease}
         canEndLease
         canReviewTenant
+        canSignAsLandlord
+        currentUserId={user.id}
         agreementHref={`/landlord/leases/${lease.id}/agreement`}
+        invoiceHrefPrefix="/landlord/invoices"
+        receiptHrefPrefix="/landlord/receipts"
         screeningReport={screeningReport}
       />
     </DashboardShell>

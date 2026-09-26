@@ -35,6 +35,7 @@ export const COMMERCIAL_PROPERTY_TYPES = [
   { value: "MALL", label: "Mall" },
   { value: "ARCADE", label: "Arcade" },
   { value: "RENTAL_UNITS", label: "Rental Units" },
+  { value: "WAREHOUSE", label: "Warehouse" },
 ] as const;
 
 // Combined list for places that need to display a type's label regardless of usage.
@@ -104,6 +105,7 @@ export const propertySchema = z
         "MALL",
         "ARCADE",
         "RENTAL_UNITS",
+        "WAREHOUSE",
       ])
       .optional()
       .or(z.literal("")),
@@ -138,14 +140,20 @@ export const unitSchema = z.object({
 export type UnitInput = z.infer<typeof unitSchema>;
 export type UnitFormInput = z.input<typeof unitSchema>;
 
-export const leaseSchema = z.object({
-  unitId: z.string().min(1),
-  tenantName: z.string().trim().min(2, "Tenant name is too short"),
-  tenantPhone: z.string().trim().min(9, "Enter a valid phone number"),
-  startDate: z.string().min(1, "Start date is required"),
-  rentAmount: z.coerce.number().positive("Rent must be greater than 0"),
-  depositAmount: z.coerce.number().min(0, "Deposit cannot be negative"),
-});
+export const leaseSchema = z
+  .object({
+    unitId: z.string().min(1),
+    tenantName: z.string().trim().min(2, "Tenant name is too short"),
+    tenantPhone: z.string().trim().min(9, "Enter a valid phone number"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional().or(z.literal("")),
+    rentAmount: z.coerce.number().positive("Rent must be greater than 0"),
+    depositAmount: z.coerce.number().min(0, "Deposit cannot be negative"),
+  })
+  .refine((data) => !data.endDate || new Date(data.endDate) > new Date(data.startDate), {
+    message: "End date must be after the start date",
+    path: ["endDate"],
+  });
 
 export type LeaseInput = z.infer<typeof leaseSchema>;
 export type LeaseFormInput = z.input<typeof leaseSchema>;
@@ -173,6 +181,22 @@ export const propertyInquirySchema = z.object({
   phone: z.string().trim().min(9, "Enter a valid phone number"),
   email: z.string().trim().email().optional().or(z.literal("")),
   message: z.string().trim().min(5, "Message is too short").max(1000, "Message is too long"),
+  requestedViewingAt: z.string().optional().or(z.literal("")),
 });
 
 export type PropertyInquiryInput = z.infer<typeof propertyInquirySchema>;
+
+export const INQUIRY_STATUSES = [
+  { value: "NEW", label: "New" },
+  { value: "VIEWING_CONFIRMED", label: "Viewing confirmed" },
+  { value: "VIEWING_RESCHEDULED", label: "Rescheduled" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+] as const;
+
+export const updateInquirySchema = z.object({
+  status: z.enum(["NEW", "VIEWING_CONFIRMED", "VIEWING_RESCHEDULED", "COMPLETED", "CANCELLED"]),
+  requestedViewingAt: z.string().optional().or(z.literal("")),
+});
+
+export type UpdateInquiryInput = z.infer<typeof updateInquirySchema>;

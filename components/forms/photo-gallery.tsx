@@ -56,7 +56,7 @@ export function PhotoGallery({
             <div key={image.id} className="group relative aspect-square overflow-hidden rounded-md">
               <Image src={image.url} alt="" fill sizes="25vw" className="object-cover" />
               {image.featured && (
-                <span className="absolute left-1 top-1 rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-medium text-white">
+                <span className="absolute left-1 top-1 rounded-full bg-ivy-700 px-2 py-0.5 text-xs font-medium text-white">
                   Featured
                 </span>
               )}

@@ -4,14 +4,15 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { newMaintenanceRequestSchema } from "@/lib/validations/maintenance";
 import { canManageProperty } from "@/lib/authorization";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request) => {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = newMaintenanceRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
@@ -43,4 +44,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(request_);
-}
+});

@@ -49,7 +49,7 @@ export function SignedAgreementUpload({
           href={currentFileUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          className="text-sm font-medium text-ivy-700 hover:text-ivy-800"
         >
           {currentFileName ?? "Download file"} →
         </a>

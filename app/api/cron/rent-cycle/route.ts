@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { runRentCycle } from "@/lib/rent-cycle";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function GET(request: Request) {
+export const GET = withErrorHandling(async (request) => {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 500 });
@@ -15,4 +16,4 @@ export async function GET(request: Request) {
 
   const results = await runRentCycle();
   return NextResponse.json(results);
-}
+});

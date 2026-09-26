@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { endLeaseSchema } from "@/lib/validations/lease";
 import { logAudit } from "@/lib/audit-log";
 import { canManageProperty } from "@/lib/authorization";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -65,6 +66,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ ok: true });
   }
 
+  if (body.action === "set-end-date") {
+    if (lease.status !== "ACTIVE") {
+      return NextResponse.json({ error: "Only an active lease's planned end date can be changed" }, { status: 409 });
+    }
+    const endDate = typeof body.endDate === "string" && body.endDate ? new Date(body.endDate) : null;
+    if (endDate && endDate <= lease.startDate) {
+      return NextResponse.json({ error: "End date must be after the start date" }, { status: 400 });
+    }
+
+    await prisma.lease.update({ where: { id: lease.id }, data: { endDate } });
+    await logAudit({
+      userId: session.user.id,
+      action: "lease.set-end-date",
+      targetType: "Lease",
+      targetId: lease.id,
+      metadata: { endDate: endDate?.toISOString() ?? null },
+    });
+    return NextResponse.json({ ok: true, endDate });
+  }
+
   if (body.action === "mark-refunded") {
     if (lease.status === "ACTIVE") {
       return NextResponse.json({ error: "End the lease before recording a deposit refund" }, { status: 409 });
@@ -88,4 +109,4 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
-}
+});

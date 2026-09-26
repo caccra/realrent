@@ -109,7 +109,7 @@ export function TenantDocumentsSection({ documents }: { documents: TenantDocumen
                   href={doc.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-emerald-700 hover:text-emerald-800"
+                  className="font-medium text-ivy-700 hover:text-ivy-800"
                 >
                   {TENANT_DOCUMENT_TYPES.find((t) => t.value === doc.type)?.label ?? doc.type}
                   {doc.label && ` — ${doc.label}`}

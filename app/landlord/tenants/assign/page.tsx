@@ -27,7 +27,7 @@ export default async function AssignTenantPage() {
         <Card>
           <p className="text-sm text-slate-500">
             None of your properties have a vacant unit right now.{" "}
-            <Link href="/landlord/properties" className="font-medium text-emerald-700 hover:text-emerald-800">
+            <Link href="/landlord/properties" className="font-medium text-ivy-700 hover:text-ivy-800">
               Add a unit
             </Link>{" "}
             before assigning a tenant.

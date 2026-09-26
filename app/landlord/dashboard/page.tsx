@@ -56,7 +56,7 @@ export default async function LandlordDashboard() {
         {isLandlord && (
           <Link
             href="/landlord/properties/new"
-            className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+            className="inline-flex items-center justify-center rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
           >
             Add property
           </Link>
@@ -120,7 +120,7 @@ export default async function LandlordDashboard() {
                     <span className="font-medium text-slate-900">{formatMoney(invoiceTotalDue(inv), inv.currency)}</span>
                     <Link
                       href={`/landlord/leases/${inv.leaseId}`}
-                      className="font-medium text-emerald-700 hover:text-emerald-800"
+                      className="font-medium text-ivy-700 hover:text-ivy-800"
                     >
                       View
                     </Link>
@@ -134,7 +134,7 @@ export default async function LandlordDashboard() {
 
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-medium text-slate-900">Invoices needing attention</h2>
-        <Link href="/landlord/tenants" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+        <Link href="/landlord/tenants" className="text-sm font-medium text-ivy-700 hover:text-ivy-800">
           View all tenants →
         </Link>
       </div>
@@ -177,7 +177,7 @@ export default async function LandlordDashboard() {
                     <td className="px-4 py-2 text-right">
                       <Link
                         href={`/landlord/leases/${inv.leaseId}`}
-                        className="font-medium text-emerald-700 hover:text-emerald-800"
+                        className="font-medium text-ivy-700 hover:text-ivy-800"
                       >
                         View
                       </Link>
@@ -192,7 +192,7 @@ export default async function LandlordDashboard() {
 
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-medium text-slate-900">Your properties</h2>
-        <Link href="/landlord/properties" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+        <Link href="/landlord/properties" className="text-sm font-medium text-ivy-700 hover:text-ivy-800">
           Manage properties →
         </Link>
       </div>
@@ -205,7 +205,7 @@ export default async function LandlordDashboard() {
                 No properties yet.{" "}
                 <Link
                   href="/landlord/properties/new"
-                  className="font-medium text-emerald-700 hover:text-emerald-800"
+                  className="font-medium text-ivy-700 hover:text-ivy-800"
                 >
                   Add your first one
                 </Link>
@@ -231,7 +231,7 @@ export default async function LandlordDashboard() {
                     </span>
                     <Link
                       href={`/landlord/properties/${property.id}`}
-                      className="font-medium text-emerald-700 hover:text-emerald-800"
+                      className="font-medium text-ivy-700 hover:text-ivy-800"
                     >
                       View
                     </Link>

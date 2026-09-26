@@ -16,6 +16,7 @@ function formatByCurrency(entries: { currency: string; amount: number }[]): stri
 const ROLE_LABELS: Record<string, string> = {
   LANDLORD: "Landlords",
   TENANT: "Tenants",
+  PROPERTY_MANAGER: "Property managers",
   CARETAKER: "Caretakers",
   ADMIN: "Admins",
   SUPER_ADMIN: "Super Admins",
@@ -46,7 +47,7 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <p className="text-sm text-slate-500">Revenue this month</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-700">
+          <p className="mt-1 text-2xl font-semibold text-ivy-700">
             {formatByCurrency(stats.revenueThisMonthByCurrency)}
           </p>
           <p className="mt-1 text-xs text-slate-400">{formatByCurrency(stats.totalRevenueByCurrency)} all-time</p>
@@ -55,13 +56,13 @@ export default async function AdminDashboardPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link href="/admin/complaints">
-          <Card className="hover:border-emerald-300">
+          <Card className="hover:border-ivy-300">
             <p className="text-sm text-slate-500">Open complaints</p>
             <p className="mt-1 text-2xl font-semibold text-red-700">{stats.openComplaintCount}</p>
           </Card>
         </Link>
         <Link href="/admin/maintenance">
-          <Card className="hover:border-emerald-300">
+          <Card className="hover:border-ivy-300">
             <p className="text-sm text-slate-500">Open maintenance requests</p>
             <p className="mt-1 text-2xl font-semibold text-amber-700">{stats.openMaintenanceCount}</p>
           </Card>
@@ -82,7 +83,7 @@ export default async function AdminDashboardPage() {
       <Card className="mt-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-medium text-slate-900">Recent signups</h2>
-          <Link href="/admin/users" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+          <Link href="/admin/users" className="text-sm font-medium text-ivy-700 hover:text-ivy-800">
             View all users →
           </Link>
         </div>

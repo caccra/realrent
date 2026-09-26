@@ -30,7 +30,7 @@ export function SendReminderButton({ invoiceId }: { invoiceId: string }) {
       <SecondaryButton onClick={handleClick} disabled={submitting} className="text-xs">
         {submitting ? "Sending…" : "Send reminder"}
       </SecondaryButton>
-      {message && <p className="mt-1 text-xs text-emerald-700">{message}</p>}
+      {message && <p className="mt-1 text-xs text-ivy-700">{message}</p>}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );

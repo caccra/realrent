@@ -12,7 +12,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="flex flex-1 flex-col bg-slate-50">
+    <div className="flex flex-1 flex-col bg-sand">
       <PublicHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
 
         <Section title="1. Who we are">
           <p>
-            RealRent (&quot;we&quot;, &quot;us&quot;) provides a property and tenancy management
+            Kezavi (&quot;we&quot;, &quot;us&quot;) provides a property and tenancy management
             platform for landlords, tenants, and caretakers in Uganda. This policy explains what
             personal data we collect, why we collect it, and how it is handled.
           </p>
@@ -69,7 +69,7 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section title="4. Who we share information with">
-          <p>We share data only with the service providers needed to run RealRent:</p>
+          <p>We share data only with the service providers needed to run Kezavi:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <span className="font-medium text-slate-700">Supabase</span> — stores uploaded
@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
 
         <Section title="8. Children">
           <p>
-            RealRent is intended for adults entering into or managing tenancy agreements. It is
+            Kezavi is intended for adults entering into or managing tenancy agreements. It is
             not directed at children under 18, and we do not knowingly collect data from them.
           </p>
         </Section>
@@ -144,7 +144,7 @@ export default function PrivacyPolicyPage() {
         <Section title="10. Contact us">
           <p>
             Questions about this policy or your data can be sent to{" "}
-            <a href="mailto:privacy@realrent.app" className="text-emerald-700 hover:text-emerald-800">
+            <a href="mailto:privacy@realrent.app" className="text-ivy-700 hover:text-ivy-800">
               privacy@realrent.app
             </a>
             .

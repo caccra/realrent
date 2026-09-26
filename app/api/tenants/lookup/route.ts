@@ -4,8 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/phone";
 import { getTenantScreeningReport } from "@/lib/data";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function GET(request: Request) {
+export const GET = withErrorHandling(async (request) => {
   const session = await getServerSession(authOptions);
   const allowedRoles = ["LANDLORD", "PROPERTY_MANAGER", "CARETAKER"];
   if (!session?.user || !allowedRoles.includes(session.user.role ?? "")) {
@@ -25,4 +26,4 @@ export async function GET(request: Request) {
 
   const report = await getTenantScreeningReport(tenant.id);
   return NextResponse.json({ exists: true, name: tenant.name, report });
-}
+});

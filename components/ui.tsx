@@ -9,7 +9,7 @@ import {
 export function Button({ className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={`inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
+      className={`inline-flex items-center justify-center rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
       {...props}
     />
   );
@@ -27,7 +27,7 @@ export function SecondaryButton({ className = "", ...props }: ButtonHTMLAttribut
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 ${className}`}
+      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-ivy-600 focus:outline-none focus:ring-1 focus:ring-ivy-600 ${className}`}
       {...props}
     />
   );
@@ -36,7 +36,7 @@ export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInpu
 export function Select({ className = "", ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
-      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 ${className}`}
+      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-ivy-600 focus:outline-none focus:ring-1 focus:ring-ivy-600 ${className}`}
       {...props}
     />
   );
@@ -45,7 +45,7 @@ export function Select({ className = "", ...props }: SelectHTMLAttributes<HTMLSe
 export function Textarea({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600 ${className}`}
+      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-ivy-600 focus:outline-none focus:ring-1 focus:ring-ivy-600 ${className}`}
       {...props}
     />
   );
@@ -78,7 +78,7 @@ export function Badge({
 }) {
   const tones: Record<string, string> = {
     slate: "bg-slate-100 text-slate-700",
-    green: "bg-emerald-100 text-emerald-800",
+    green: "bg-ivy-100 text-ivy-800",
     red: "bg-red-100 text-red-700",
     amber: "bg-amber-100 text-amber-800",
   };

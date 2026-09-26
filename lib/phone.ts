@@ -18,7 +18,8 @@ export function normalizePhone(raw: string): string | null {
   return null;
 }
 
-export function formatPhoneForDisplay(normalized: string): string {
+export function formatPhoneForDisplay(normalized: string | null | undefined): string {
+  if (!normalized) return "";
   if (normalized.startsWith("256") && normalized.length === 12) {
     return "0" + normalized.slice(3);
   }

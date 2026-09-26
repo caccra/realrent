@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageProperty } from "@/lib/authorization";
 import { newMessageSchema } from "@/lib/validations/message";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
 async function loadAuthorizedLease(leaseId: string, userId: string, role: string | null | undefined) {
   const lease = await prisma.lease.findUnique({
@@ -18,7 +19,7 @@ async function loadAuthorizedLease(leaseId: string, userId: string, role: string
   return authorized ? lease : null;
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withErrorHandling(async (_request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -48,9 +49,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 
   return NextResponse.json({ messages: conversation?.messages ?? [] });
-}
+});
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -62,7 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = newMessageSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
@@ -111,4 +112,4 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   await prisma.notification.createMany({ data: notifications });
 
   return NextResponse.json(created);
-}
+});

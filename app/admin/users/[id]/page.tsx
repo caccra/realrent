@@ -8,6 +8,8 @@ import { formatPhoneForDisplay } from "@/lib/phone";
 import { ADMIN_NAV } from "@/lib/admin-nav";
 import { AdminUserRoleForm } from "@/components/forms/admin-user-role-form";
 import { AdminSuspendUserButton } from "@/components/forms/admin-suspend-user-button";
+import { AdminEditUserForm } from "@/components/forms/admin-edit-user-form";
+import { AdminDeleteUserButton } from "@/components/forms/admin-delete-user-button";
 
 const ACTION_LABELS: Record<string, string> = {
   "property.delete": "Deleted a property",
@@ -18,9 +20,17 @@ const ACTION_LABELS: Record<string, string> = {
   "document.unverify": "Un-verified a tenant document",
   "caretaker.appoint": "Appointed a caretaker",
   "caretaker.remove": "Removed a caretaker",
+  "property-manager.appoint": "Appointed a property manager",
+  "property-manager.remove": "Removed a property manager",
   "admin.set-role": "Role changed by an admin",
   "admin.suspend-user": "Account suspended",
   "admin.unsuspend-user": "Account restored",
+  "admin.create-user": "Account created by an admin",
+  "admin.edit-user": "Profile edited by an admin",
+  "admin.delete-user": "Account deleted by an admin",
+  "admin.create-property": "Property added by an admin",
+  "admin.activate-property": "Property reactivated by an admin",
+  "admin.deactivate-property": "Property hidden by an admin",
 };
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,7 +46,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   return (
     <DashboardShell title={user.name} userName={admin.name ?? ""} nav={ADMIN_NAV}>
-      <Link href="/admin/users" className="mb-4 inline-block text-sm text-emerald-700 hover:text-emerald-800">
+      <Link href="/admin/users" className="mb-4 inline-block text-sm text-ivy-700 hover:text-ivy-800">
         ← All users
       </Link>
 
@@ -58,10 +68,21 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           {isSuperAdmin && id !== admin.id && (
             <div className="flex flex-col items-end gap-3">
               <AdminUserRoleForm userId={user.id} currentRole={user.role ?? ""} />
-              <AdminSuspendUserButton userId={user.id} suspended={user.suspended} />
+              <div className="flex gap-2">
+                <AdminSuspendUserButton userId={user.id} suspended={user.suspended} />
+                <AdminDeleteUserButton userId={user.id} name={user.name} />
+              </div>
             </div>
           )}
         </div>
+        {isSuperAdmin && id !== admin.id && (
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <AdminEditUserForm
+              userId={user.id}
+              defaultValues={{ name: user.name, phone: user.phone ?? "", email: user.email ?? "" }}
+            />
+          </div>
+        )}
       </Card>
 
       {user.properties.length > 0 && (
@@ -96,6 +117,19 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
         </Card>
       )}
 
+      {user.propertyManagerAssignments.length > 0 && (
+        <Card className="mb-6">
+          <h2 className="mb-3 text-sm font-medium text-slate-900">
+            Property manager of ({user.propertyManagerAssignments.length})
+          </h2>
+          <ul className="space-y-1 text-sm text-slate-700">
+            {user.propertyManagerAssignments.map((a) => (
+              <li key={a.id}>{a.property.name}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       {user.caretakerAssignments.length > 0 && (
         <Card className="mb-6">
           <h2 className="mb-3 text-sm font-medium text-slate-900">
@@ -115,7 +149,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           <ul className="space-y-1 text-sm">
             {user.documents.map((d) => (
               <li key={d.id} className="flex items-center justify-between">
-                <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-800">
+                <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-ivy-700 hover:text-ivy-800">
                   {d.type}
                   {d.label && ` — ${d.label}`}
                 </a>

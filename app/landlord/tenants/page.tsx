@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
+import { WhatsAppLink } from "@/components/whatsapp-link";
 import { navForRole } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
 import { invoiceTotalDue } from "@/lib/invoice-total";
@@ -29,7 +30,7 @@ export default async function TenantsPage() {
         </p>
         <Link
           href="/landlord/tenants/assign"
-          className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+          className="inline-flex items-center justify-center rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
         >
           Assign tenant
         </Link>
@@ -39,7 +40,7 @@ export default async function TenantsPage() {
         <Card>
           <p className="text-sm text-slate-500">
             No tenants yet.{" "}
-            <Link href="/landlord/tenants/assign" className="font-medium text-emerald-700 hover:text-emerald-800">
+            <Link href="/landlord/tenants/assign" className="font-medium text-ivy-700 hover:text-ivy-800">
               Assign your first tenant
             </Link>{" "}
             to a vacant unit.
@@ -68,7 +69,13 @@ export default async function TenantsPage() {
                 >
                   <td className="px-4 py-2 text-slate-900">{lease.tenant.name}</td>
                   <td className="px-4 py-2 text-slate-600">
-                    {lease.tenant.phone ? formatPhoneForDisplay(lease.tenant.phone) : "—"}
+                    <span className="flex items-center gap-2">
+                      {lease.tenant.phone ? formatPhoneForDisplay(lease.tenant.phone) : "—"}
+                      <WhatsAppLink
+                        number={lease.tenant.whatsappNumber}
+                        message={`Hi ${lease.tenant.name}, this is regarding ${lease.unit.property.name} — ${lease.unit.label}.`}
+                      />
+                    </span>
                   </td>
                   <td className="px-4 py-2 text-slate-600">
                     {lease.unit.property.name} — {lease.unit.label}
@@ -82,7 +89,7 @@ export default async function TenantsPage() {
                   <td className="px-4 py-2 text-right">
                     <Link
                       href={`/landlord/leases/${lease.id}`}
-                      className="font-medium text-emerald-700 hover:text-emerald-800"
+                      className="font-medium text-ivy-700 hover:text-ivy-800"
                     >
                       Manage
                     </Link>

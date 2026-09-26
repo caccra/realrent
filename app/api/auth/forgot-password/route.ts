@@ -4,16 +4,17 @@ import { normalizePhone } from "@/lib/phone";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { generateResetToken } from "@/lib/tokens";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
 const TOKEN_TTL_MINUTES = 30;
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request) => {
   const ipAllowed = await checkRateLimit(`forgot-password-ip:${getClientIp(request)}`, 10, 60);
   if (!ipAllowed) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = forgotPasswordSchema.safeParse(body);
 
   if (!parsed.success) {
@@ -61,4 +62,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json(response);
-}
+});

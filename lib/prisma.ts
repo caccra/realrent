@@ -5,7 +5,9 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+// Capped well below the Supabase session-mode pooler's connection limit (15)
+// so a single instance can't exhaust it on its own.
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL, max: 5 });
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 

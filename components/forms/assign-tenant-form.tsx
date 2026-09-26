@@ -99,22 +99,22 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
 
   if (created) {
     return (
-      <Card className="max-w-xl border-emerald-300 bg-emerald-50">
-        <p className="font-medium text-emerald-900">Tenant assigned</p>
+      <Card className="max-w-xl border-ivy-300 bg-ivy-50">
+        <p className="font-medium text-ivy-900">Tenant assigned</p>
         {created.tempPassword ? (
-          <p className="mt-2 text-sm text-emerald-800">
+          <p className="mt-2 text-sm text-ivy-800">
             A new tenant account was created for {created.tenantPhone}. Share this temporary
             password with them so they can log in:{" "}
             <span className="font-mono font-semibold">{created.tempPassword}</span>
           </p>
         ) : (
-          <p className="mt-2 text-sm text-emerald-800">
+          <p className="mt-2 text-sm text-ivy-800">
             Linked to the existing tenant account for {created.tenantPhone}.
           </p>
         )}
         <a
           href={`/landlord/leases/${created.id}`}
-          className="mt-4 inline-block rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+          className="mt-4 inline-block rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
         >
           Manage this client →
         </a>
@@ -166,7 +166,7 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
           <FieldError message={errors.unitId?.message} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="tenantName">Tenant name</Label>
             <Input id="tenantName" {...register("tenantName")} />
@@ -201,7 +201,7 @@ export function AssignTenantForm({ properties }: { properties: PropertyOption[] 
 
         {lookup.status === "loading" && <p className="text-sm text-slate-500">Checking…</p>}
         {lookup.status === "not-found" && (
-          <p className="text-sm text-slate-500">No RealRent account found for that number yet — a new one will be created.</p>
+          <p className="text-sm text-slate-500">No Kezavi account found for that number yet — a new one will be created.</p>
         )}
         {lookup.status === "error" && <p className="text-sm text-red-600">{lookup.message}</p>}
         {lookup.status === "found" && (

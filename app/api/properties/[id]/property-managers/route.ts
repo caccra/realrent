@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { appointPropertyManagerSchema } from "@/lib/validations/property";
 import { findOrCreateUserByPhone } from "@/lib/user-provisioning";
 import { logAudit } from "@/lib/audit-log";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "LANDLORD") {
@@ -18,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = appointPropertyManagerSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
@@ -58,4 +59,4 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     manager: { id: manager.id, name: manager.name, phone: manager.phone },
     tempPassword: provisioned.tempPassword,
   });
-}
+});

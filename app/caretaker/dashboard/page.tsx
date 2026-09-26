@@ -49,7 +49,7 @@ export default async function CaretakerDashboard() {
                           </p>
                           <Link
                             href={`/caretaker/leases/${activeLease.id}`}
-                            className="mt-1 inline-block font-medium text-emerald-700 hover:text-emerald-800"
+                            className="mt-1 inline-block font-medium text-ivy-700 hover:text-ivy-800"
                           >
                             View invoices and record payments →
                           </Link>

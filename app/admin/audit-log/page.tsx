@@ -49,7 +49,7 @@ export default async function AdminAuditLogPage() {
                 <td className="px-4 py-2 text-slate-700">{ACTION_LABELS[log.action] ?? log.action}</td>
                 <td className="px-4 py-2 text-right">
                   {log.userId && (
-                    <Link href={`/admin/users/${log.userId}`} className="font-medium text-emerald-700 hover:text-emerald-800">
+                    <Link href={`/admin/users/${log.userId}`} className="font-medium text-ivy-700 hover:text-ivy-800">
                       View user
                     </Link>
                   )}

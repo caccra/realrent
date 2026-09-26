@@ -67,7 +67,7 @@ export function ReviewForm({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          className="mt-2 text-sm font-medium text-ivy-700 hover:text-ivy-800"
         >
           Edit review
         </button>

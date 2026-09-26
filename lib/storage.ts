@@ -6,6 +6,7 @@ const COMPLAINT_BUCKET = "complaint-images";
 const LEASE_DOCUMENT_BUCKET = "lease-documents";
 const TENANT_DOCUMENT_BUCKET = "tenant-documents";
 const INSPECTION_BUCKET = "inspection-photos";
+const EXPENSE_RECEIPT_BUCKET = "expense-receipts";
 
 // Created lazily (not at module load) so importing this file — which Next.js
 // does when statically analyzing API routes at build time — doesn't crash
@@ -122,4 +123,12 @@ export function uploadInspectionPhoto(inspectionId: string, file: File): Promise
 
 export function deleteInspectionPhotoFile(publicUrl: string): Promise<void> {
   return deleteFile(INSPECTION_BUCKET, publicUrl);
+}
+
+export function uploadExpenseReceipt(propertyId: string, file: File): Promise<string> {
+  return uploadFile(EXPENSE_RECEIPT_BUCKET, propertyId, file);
+}
+
+export function deleteExpenseReceiptFile(publicUrl: string): Promise<void> {
+  return deleteFile(EXPENSE_RECEIPT_BUCKET, publicUrl);
 }

@@ -3,9 +3,10 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 import { hashToken } from "@/lib/tokens";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
-export async function POST(request: Request) {
-  const body = await request.json();
+export const POST = withErrorHandling(async (request) => {
+  const body = await readJsonBody(request);
   const parsed = resetPasswordSchema.safeParse(body);
 
   if (!parsed.success) {
@@ -30,4 +31,4 @@ export async function POST(request: Request) {
   ]);
 
   return NextResponse.json({ message: "Password updated" });
-}
+});

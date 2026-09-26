@@ -51,7 +51,7 @@ export function ResetPasswordForm() {
       <Card className="w-full max-w-md">
         <p className="text-sm text-red-600">This reset link is missing a token.</p>
         <p className="mt-4 text-sm text-slate-500">
-          <Link href="/forgot-password" className="font-medium text-emerald-700 hover:text-emerald-800">
+          <Link href="/forgot-password" className="font-medium text-ivy-700 hover:text-ivy-800">
             Request a new link
           </Link>
         </p>

@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit-log";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string; managerId: string }> }
-) {
+export const DELETE = withErrorHandling(async (
+  _request,
+  { params }
+) => {
   const { id, managerId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "LANDLORD") {
@@ -35,4 +36,4 @@ export async function DELETE(
     metadata: { managerId },
   });
   return NextResponse.json({ ok: true });
-}
+});

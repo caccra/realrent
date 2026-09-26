@@ -6,6 +6,7 @@ import { Card } from "@/components/ui";
 import { formatMoney, type Currency } from "@/lib/money";
 import { PrintButton } from "@/components/print-button";
 import { canManageProperty } from "@/lib/authorization";
+import { EXPENSE_CATEGORIES } from "@/lib/validations/expense";
 
 /** Most properties collect a single currency; joins the rare mixed case rather than summing raw numbers. */
 function formatByCurrency(entries: { currency: string; amount: number }[]): string {
@@ -47,13 +48,13 @@ export default async function PropertyStatementPage({
         <div className="flex items-center gap-3 text-sm">
           <Link
             href={`/landlord/properties/${id}/statement?year=${prevMonth.year}&month=${prevMonth.month}`}
-            className="text-emerald-700 hover:text-emerald-800"
+            className="text-ivy-700 hover:text-ivy-800"
           >
             ← Previous month
           </Link>
           <Link
             href={`/landlord/properties/${id}/statement?year=${nextMonth.year}&month=${nextMonth.month}`}
-            className="text-emerald-700 hover:text-emerald-800"
+            className="text-ivy-700 hover:text-ivy-800"
           >
             Next month →
           </Link>
@@ -87,12 +88,19 @@ export default async function PropertyStatementPage({
         <div className="mt-4 border-t border-slate-100 pt-4">
           <h2 className="mb-2 text-sm font-medium text-slate-900">Expenses</h2>
           <Row label="Maintenance (UGX)" value={formatMoney(statement.maintenanceCost, "UGX")} />
+          {statement.expensesByCategory.map((e) => (
+            <Row
+              key={`${e.category}:${e.currency}`}
+              label={EXPENSE_CATEGORIES.find((c) => c.value === e.category)?.label ?? e.category}
+              value={formatMoney(e.amount, e.currency as Currency)}
+            />
+          ))}
         </div>
 
         <div className="mt-4 border-t border-slate-200 pt-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-900">Net income</span>
-            <span className="text-xl font-semibold text-emerald-700">
+            <span className="text-xl font-semibold text-ivy-700">
               {formatByCurrency(statement.netIncomeByCurrency)}
             </span>
           </div>

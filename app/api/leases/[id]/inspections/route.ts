@@ -5,10 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { inspectionSchema } from "@/lib/validations/inspection";
 import { canManageProperty } from "@/lib/authorization";
 import { isAllowedImage, uploadInspectionPhoto } from "@/lib/storage";
+import { withErrorHandling } from "@/lib/api-handler";
 
 const MAX_PHOTOS = 12;
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -84,4 +85,4 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   return NextResponse.json({ id: inspection.id });
-}
+});

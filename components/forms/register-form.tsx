@@ -124,11 +124,11 @@ export function RegisterForm() {
             <input type="checkbox" className="mt-0.5" {...register("agreedToTerms")} />
             <span>
               I agree to the{" "}
-              <Link href="/terms" target="_blank" className="font-medium text-emerald-700 hover:text-emerald-800">
+              <Link href="/terms" target="_blank" className="font-medium text-ivy-700 hover:text-ivy-800">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" target="_blank" className="font-medium text-emerald-700 hover:text-emerald-800">
+              <Link href="/privacy" target="_blank" className="font-medium text-ivy-700 hover:text-ivy-800">
                 Privacy Policy
               </Link>
             </span>
@@ -153,7 +153,7 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-emerald-700 hover:text-emerald-800">
+        <Link href="/login" className="font-medium text-ivy-700 hover:text-ivy-800">
           Log in
         </Link>
       </p>

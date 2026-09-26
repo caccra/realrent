@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card } from "@/components/ui";
 import { PaymentPreferencesForm } from "@/components/forms/payment-preferences-form";
+import { WhatsAppNumberForm } from "@/components/forms/whatsapp-number-form";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { getUserAuditLogs } from "@/lib/data";
 
@@ -36,6 +37,10 @@ export default async function LandlordSettingsPage() {
           bankAccountNumber: fullUser.bankAccountNumber ?? "",
         }}
       />
+
+      <div className="mt-6">
+        <WhatsAppNumberForm currentNumber={fullUser.whatsappNumber} />
+      </div>
 
       <Card className="mt-6">
         <h2 className="mb-3 text-sm font-medium text-slate-900">Activity log</h2>

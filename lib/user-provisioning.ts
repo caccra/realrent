@@ -8,7 +8,11 @@ function generateTempPassword(): string {
 }
 
 type ProvisionResult =
-  | { ok: true; user: { id: string; name: string; phone: string | null }; tempPassword: string | null }
+  | {
+      ok: true;
+      user: { id: string; name: string; phone: string | null; email: string | null };
+      tempPassword: string | null;
+    }
   | { ok: false; error: string };
 
 /**

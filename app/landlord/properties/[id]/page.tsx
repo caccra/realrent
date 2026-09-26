@@ -12,11 +12,13 @@ import { PropertyPhotos } from "@/components/forms/property-photos";
 import { CaretakerSection } from "@/components/forms/caretaker-section";
 import { PropertyManagerSection } from "@/components/forms/property-manager-section";
 import { LateFeePolicyForm } from "@/components/forms/late-fee-policy-form";
+import { ExpenseSection } from "@/components/forms/expense-section";
+import { InquiryActions } from "@/components/forms/inquiry-actions";
 import { formatMoney } from "@/lib/money";
 import { PROPERTY_TYPES, PROPERTY_USAGES } from "@/lib/validations/property";
 import { navForRole } from "@/lib/landlord-nav";
 import { unitDetailLine } from "@/lib/unit-details";
-import { getPropertyInquiries, getPropertyReviews } from "@/lib/data";
+import { getPropertyExpenses, getPropertyInquiries, getPropertyReviews } from "@/lib/data";
 import { canManageProperty } from "@/lib/authorization";
 import { StarRating } from "@/components/star-rating";
 
@@ -55,9 +57,17 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const isSale = property.listingType === "SALE";
   const reviewSummary = await getPropertyReviews(property.id);
   const inquiries = isSale ? await getPropertyInquiries(property.id) : [];
+  const expenses = await getPropertyExpenses(property.id);
 
   return (
     <DashboardShell title={property.name} userName={user.name ?? ""} nav={navForRole(user.role)}>
+      {!property.active && (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          This property has been hidden from public listings by an administrator
+          {property.deactivatedReason && `: "${property.deactivatedReason}"`}. Everything else still
+          works as normal — leases, payments, and invoicing are unaffected.
+        </div>
+      )}
       <div className="mb-1 flex items-center justify-between">
         <p className="text-sm text-slate-500">
           {property.address}
@@ -107,7 +117,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
       {!isSale && (
         <Link
           href={`/landlord/properties/${property.id}/statement`}
-          className="mb-4 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          className="mb-4 inline-block text-sm font-medium text-ivy-700 hover:text-ivy-800"
         >
           View monthly statement →
         </Link>
@@ -135,6 +145,8 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
 
       <PropertyPhotos propertyId={property.id} images={property.images} />
 
+      <ExpenseSection propertyId={property.id} expenses={expenses} />
+
       {isLandlord && (
         <>
           <CaretakerSection propertyId={property.id} caretakers={property.caretakerAssignments} />
@@ -158,9 +170,16 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                     {inq.email && ` · ${inq.email}`}
                   </p>
                   <p className="text-slate-600">{inq.message}</p>
+                  {inq.requestedViewingAt && (
+                    <p className="mt-1 text-slate-700">
+                      Wants to view on{" "}
+                      <span className="font-medium">{new Date(inq.requestedViewingAt).toLocaleString("en-UG")}</span>
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-slate-400">
                     {new Date(inq.createdAt).toLocaleString("en-UG")}
                   </p>
+                  {inq.requestedViewingAt && <InquiryActions inquiryId={inq.id} status={inq.status} />}
                 </li>
               ))}
             </ul>
@@ -214,7 +233,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                     </p>
                     <Link
                       href={`/landlord/leases/${activeLease.id}`}
-                      className="mt-1 inline-block font-medium text-emerald-700 hover:text-emerald-800"
+                      className="mt-1 inline-block font-medium text-ivy-700 hover:text-ivy-800"
                     >
                       View lease and invoices →
                     </Link>

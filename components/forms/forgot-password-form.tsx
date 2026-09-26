@@ -57,7 +57,7 @@ export function ForgotPasswordForm() {
               <p className="text-xs font-medium text-amber-800">
                 No SMS provider is configured yet, so here&apos;s your reset link for testing:
               </p>
-              <Link href={devResetUrl} className="mt-1 block break-all text-xs text-emerald-700 underline">
+              <Link href={devResetUrl} className="mt-1 block break-all text-xs text-ivy-700 underline">
                 {devResetUrl}
               </Link>
             </div>
@@ -80,7 +80,7 @@ export function ForgotPasswordForm() {
       )}
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        <Link href="/login" className="font-medium text-emerald-700 hover:text-emerald-800">
+        <Link href="/login" className="font-medium text-ivy-700 hover:text-ivy-800">
           Back to log in
         </Link>
       </p>

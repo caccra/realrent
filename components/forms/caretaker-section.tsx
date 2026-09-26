@@ -80,7 +80,7 @@ export function CaretakerSection({
       </div>
 
       {created && (
-        <div className="mb-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+        <div className="mb-3 rounded-md border border-ivy-200 bg-ivy-50 p-3 text-sm text-ivy-900">
           {created.tempPassword ? (
             <>
               A new caretaker account was created for {formatPhoneForDisplay(created.phone)}. Share
@@ -95,7 +95,7 @@ export function CaretakerSection({
 
       {open && (
         <form className="mb-4 space-y-3" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="caretakerName">Name</Label>
               <Input id="caretakerName" {...register("name")} />

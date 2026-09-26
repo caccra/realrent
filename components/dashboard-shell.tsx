@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { NotificationBell } from "@/components/notification-bell";
+import { Logo } from "@/components/logo";
 
 export function DashboardShell({
   title,
@@ -14,11 +15,11 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-slate-50">
+    <div className="flex min-h-full flex-1 flex-col bg-sand">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-lg font-semibold text-emerald-800">
-            RealRent
+          <Link href="/">
+            <Logo />
           </Link>
           <div className="flex items-center gap-4 text-sm text-slate-600">
             <NotificationBell />
@@ -31,7 +32,7 @@ export function DashboardShell({
             <Link
               key={item.href}
               href={item.href}
-              className="border-b-2 border-transparent py-3 text-slate-600 hover:border-emerald-700 hover:text-slate-900"
+              className="border-b-2 border-transparent py-3 text-slate-600 hover:border-ivy-700 hover:text-slate-900"
             >
               {item.label}
             </Link>

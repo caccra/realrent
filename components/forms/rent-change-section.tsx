@@ -87,7 +87,7 @@ export function RentChangeSection({
 
       {open && (
         <form className="mb-4 space-y-3" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="newRentAmount">New rent amount ({currency})</Label>
               <Input id="newRentAmount" type="number" min={0} {...register("newRentAmount")} />
@@ -128,7 +128,7 @@ export function RentChangeSection({
                   {formatMoney(rc.newRentAmount.toString(), currency)} from{" "}
                   {new Date(rc.effectiveDate).toLocaleDateString("en-UG")}
                   {rc.note && ` · ${rc.note}`}
-                  {isFuture && <span className="ml-2 text-emerald-700">(upcoming)</span>}
+                  {isFuture && <span className="ml-2 text-ivy-700">(upcoming)</span>}
                 </span>
                 {isFuture && (
                   <SecondaryButton

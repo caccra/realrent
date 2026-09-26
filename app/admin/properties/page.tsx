@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/session";
-import { getAllPropertiesAdmin } from "@/lib/data";
+import { getAllPropertiesAdmin, getAllLandlordsForPicker } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { ADMIN_NAV } from "@/lib/admin-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
+import { AdminAddPropertyForm } from "@/components/forms/admin-add-property-form";
 
 export default async function AdminPropertiesPage() {
   const user = await requireAdmin();
-  const properties = await getAllPropertiesAdmin();
+  const [properties, landlords] = await Promise.all([getAllPropertiesAdmin(), getAllLandlordsForPicker()]);
 
   return (
     <DashboardShell title="Properties" userName={user.name ?? ""} nav={ADMIN_NAV}>
       <p className="mb-4 text-sm text-slate-500">{properties.length} most recent, across all landlords.</p>
+      <AdminAddPropertyForm landlords={landlords} />
       <SearchFilterBox containerId="admin-properties-body" placeholder="Search by name, address, or landlord…" />
       <Card className="overflow-hidden p-0">
         <table className="w-full text-sm">
@@ -22,8 +24,10 @@ export default async function AdminPropertiesPage() {
               <th className="px-4 py-2 font-medium">Property</th>
               <th className="px-4 py-2 font-medium">Landlord</th>
               <th className="px-4 py-2 font-medium">Listing</th>
+              <th className="px-4 py-2 font-medium">Status</th>
               <th className="px-4 py-2 font-medium">Units</th>
               <th className="px-4 py-2 font-medium">Created</th>
+              <th className="px-4 py-2" />
               <th className="px-4 py-2" />
             </tr>
           </thead>
@@ -43,15 +47,26 @@ export default async function AdminPropertiesPage() {
                     {p.listingType === "SALE" ? "For sale" : "For rent"}
                   </Badge>
                 </td>
+                <td className="px-4 py-2">
+                  <Badge tone={p.active ? "green" : "slate"}>{p.active ? "Active" : "Hidden"}</Badge>
+                </td>
                 <td className="px-4 py-2 text-slate-600">{p._count.units}</td>
                 <td className="px-4 py-2 text-slate-500">{new Date(p.createdAt).toLocaleDateString("en-UG")}</td>
                 <td className="px-4 py-2 text-right">
                   <Link
                     href={`/properties/${p.id}`}
                     target="_blank"
-                    className="font-medium text-emerald-700 hover:text-emerald-800"
+                    className="font-medium text-ivy-700 hover:text-ivy-800"
                   >
                     View listing →
+                  </Link>
+                </td>
+                <td className="px-4 py-2 text-right">
+                  <Link
+                    href={`/admin/properties/${p.id}`}
+                    className="font-medium text-ivy-700 hover:text-ivy-800"
+                  >
+                    Manage →
                   </Link>
                 </td>
               </tr>

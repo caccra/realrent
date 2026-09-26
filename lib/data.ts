@@ -54,7 +54,7 @@ export function getPublicProperties(filters: PublicPropertyFilters = {}) {
         ? saleCondition
         : { OR: [rentalCondition, saleCondition] };
 
-  const and: Prisma.PropertyWhereInput[] = [listingCondition];
+  const and: Prisma.PropertyWhereInput[] = [listingCondition, { active: true }];
   if (filters.usage) and.push({ usage: filters.usage });
   if (filters.propertyType) and.push({ propertyType: filters.propertyType });
   if (filters.q) {
@@ -68,12 +68,16 @@ export function getPublicProperties(filters: PublicPropertyFilters = {}) {
     });
   }
 
+  const contactSelect = { name: true, phone: true, email: true, whatsappNumber: true } as const;
+
   return prisma.property.findMany({
     where: { AND: and },
     orderBy: { createdAt: "desc" },
     include: {
       images: { orderBy: [{ featured: "desc" }, { order: "asc" }], take: 1 },
       units: { where: unitWhere, orderBy: { rentAmount: "asc" } },
+      landlord: { select: contactSelect },
+      propertyManagerAssignments: { take: 1, select: { manager: { select: contactSelect } } },
     },
   });
 }
@@ -179,6 +183,7 @@ export async function getUserAdminDetail(userId: string) {
         select: { id: true, status: true, unit: { select: { label: true, property: { select: { name: true } } } } },
       },
       caretakerAssignments: { include: { property: { select: { id: true, name: true } } } },
+      propertyManagerAssignments: { include: { property: { select: { id: true, name: true } } } },
       documents: { orderBy: { createdAt: "desc" } },
     },
   });
@@ -201,6 +206,33 @@ export function getAllPropertiesAdmin() {
       landlord: { select: { name: true, phone: true } },
       _count: { select: { units: true } },
     },
+  });
+}
+
+export function getPropertyAdminDetail(propertyId: string) {
+  return prisma.property.findUnique({
+    where: { id: propertyId },
+    include: {
+      landlord: { select: { id: true, name: true, phone: true } },
+      units: { select: { id: true, label: true, status: true } },
+      _count: { select: { units: true } },
+    },
+  });
+}
+
+export function getAllLandlordsForPicker() {
+  return prisma.user.findMany({
+    where: { role: "LANDLORD" },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, phone: true },
+    take: 500,
+  });
+}
+
+export function getAllContactMessages() {
+  return prisma.contactMessage.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
   });
 }
 
@@ -247,6 +279,7 @@ export function getPublicPropertyDetail(propertyId: string) {
   return prisma.property.findFirst({
     where: {
       id: propertyId,
+      active: true,
       OR: [{ listingType: "RENTAL", units: { some: { status: "VACANT" } } }, { listingType: "SALE" }],
     },
     include: {
@@ -255,6 +288,7 @@ export function getPublicPropertyDetail(propertyId: string) {
       landlord: {
         select: {
           name: true,
+          whatsappNumber: true,
           acceptsCash: true,
           acceptsMobileMoney: true,
           momoProvider: true,
@@ -426,7 +460,28 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
   // Maintenance costs are tracked in UGX only for now; only subtracted from the UGX net income figure.
   const maintenanceCost = maintenance.reduce((sum, m) => sum + Number(m.cost ?? 0), 0);
 
-  const currencies = new Set([...expectedByCurrency.keys(), ...collectedByCurrency.keys(), "UGX"]);
+  const expenses = await prisma.expense.findMany({
+    where: { propertyId, incurredAt: { gte: start, lt: end } },
+    orderBy: { incurredAt: "desc" },
+  });
+  const expensesByCurrency = new Map<string, number>();
+  for (const e of expenses) {
+    expensesByCurrency.set(e.currency, (expensesByCurrency.get(e.currency) ?? 0) + Number(e.amount));
+  }
+  const expensesByCategoryMap = new Map<string, { category: string; currency: string; amount: number }>();
+  for (const e of expenses) {
+    const key = `${e.category}:${e.currency}`;
+    const entry = expensesByCategoryMap.get(key) ?? { category: e.category, currency: e.currency, amount: 0 };
+    entry.amount += Number(e.amount);
+    expensesByCategoryMap.set(key, entry);
+  }
+
+  const currencies = new Set([
+    ...expectedByCurrency.keys(),
+    ...collectedByCurrency.keys(),
+    ...expensesByCurrency.keys(),
+    "UGX",
+  ]);
   const byCurrency = (map: Map<string, number>) =>
     Array.from(currencies)
       .map((currency) => ({ currency, amount: map.get(currency) ?? 0 }))
@@ -434,6 +489,7 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
 
   const expectedRentByCurrency = byCurrency(expectedByCurrency);
   const collectedByCurrencyList = byCurrency(collectedByCurrency);
+  const expensesByCurrencyList = byCurrency(expensesByCurrency);
   const outstandingByCurrency = Array.from(currencies)
     .map((currency) => ({
       currency,
@@ -443,7 +499,10 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
   const netIncomeByCurrency = Array.from(currencies)
     .map((currency) => ({
       currency,
-      amount: (collectedByCurrency.get(currency) ?? 0) - (currency === "UGX" ? maintenanceCost : 0),
+      amount:
+        (collectedByCurrency.get(currency) ?? 0) -
+        (currency === "UGX" ? maintenanceCost : 0) -
+        (expensesByCurrency.get(currency) ?? 0),
     }))
     .filter((e) => e.amount !== 0 || e.currency === "UGX");
 
@@ -455,11 +514,22 @@ export async function getPropertyMonthlyStatement(propertyId: string, year: numb
     collectedByCurrency: collectedByCurrencyList,
     outstandingByCurrency,
     maintenanceCost,
+    expenses,
+    expensesByCurrency: expensesByCurrencyList,
+    expensesByCategory: Array.from(expensesByCategoryMap.values()),
     netIncomeByCurrency,
     invoices,
     payments,
     maintenance,
   };
+}
+
+export function getPropertyExpenses(propertyId: string) {
+  return prisma.expense.findMany({
+    where: { propertyId },
+    orderBy: { incurredAt: "desc" },
+    include: { recordedBy: { select: { name: true } } },
+  });
 }
 
 export async function getLandlordAnalytics(landlordId: string) {
@@ -499,7 +569,13 @@ export async function getLandlordAnalytics(landlordId: string) {
       paidAt: { gte: months[0].start },
       invoice: { lease: { unit: { property: landlordOrManagerFilter(landlordId) } } },
     },
-    select: { amount: true, paidAt: true, method: true, currency: true },
+    select: {
+      amount: true,
+      paidAt: true,
+      method: true,
+      currency: true,
+      invoice: { select: { lease: { select: { unit: { select: { propertyId: true } } } } } },
+    },
   });
 
   // A landlord's payments are overwhelmingly in one currency in practice, so
@@ -532,6 +608,53 @@ export async function getLandlordAnalytics(landlordId: string) {
     amount: primaryPayments
       .filter((p) => p.paidAt >= start && p.paidAt < end)
       .reduce((sum, p) => sum + Number(p.amount), 0),
+  }));
+
+  const revenueByPropertyMap = new Map<string, number>();
+  for (const p of primaryPayments) {
+    const propertyId = p.invoice.lease.unit.propertyId;
+    revenueByPropertyMap.set(propertyId, (revenueByPropertyMap.get(propertyId) ?? 0) + Number(p.amount));
+  }
+  const revenueByProperty = Array.from(byPropertyMap.values())
+    .map((p) => ({ id: p.id, name: p.name, amount: revenueByPropertyMap.get(p.id) ?? 0 }))
+    .sort((a, b) => b.amount - a.amount);
+
+  // Vacancy is only tracked as current unit.status, not historically, so the
+  // 6-month trend approximates occupancy per month from lease date ranges
+  // against today's unit count rather than a true point-in-time snapshot.
+  const allLeases = await prisma.lease.findMany({
+    where: { unit: { property: landlordOrManagerFilter(landlordId) } },
+    select: { unitId: true, startDate: true, endDate: true, status: true },
+  });
+  const vacancyTrend = months.map(({ label, start, end }) => {
+    const occupiedUnitIds = new Set<string>();
+    for (const lease of allLeases) {
+      const leaseEnd = lease.status === "ACTIVE" ? now : (lease.endDate ?? now);
+      if (lease.startDate < end && leaseEnd >= start) occupiedUnitIds.add(lease.unitId);
+    }
+    return {
+      label,
+      occupancyRate: totalUnits > 0 ? occupiedUnitIds.size / totalUnits : 0,
+    };
+  });
+
+  const leaseExpirationHorizon = new Date(now);
+  leaseExpirationHorizon.setDate(leaseExpirationHorizon.getDate() + 90);
+  const expiringLeasesRaw = await prisma.lease.findMany({
+    where: {
+      status: "ACTIVE",
+      endDate: { not: null, gte: now, lte: leaseExpirationHorizon },
+      unit: { property: landlordOrManagerFilter(landlordId) },
+    },
+    include: { tenant: { select: { name: true } }, unit: { include: { property: { select: { name: true } } } } },
+    orderBy: { endDate: "asc" },
+  });
+  const leaseExpirationTimeline = expiringLeasesRaw.map((l) => ({
+    leaseId: l.id,
+    tenantName: l.tenant.name,
+    propertyLabel: `${l.unit.property.name} — ${l.unit.label}`,
+    endDate: l.endDate as Date,
+    daysUntilEnd: Math.ceil((l.endDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
   }));
 
   const openInvoices = await prisma.rentInvoice.findMany({
@@ -578,6 +701,9 @@ export async function getLandlordAnalytics(landlordId: string) {
     primaryCurrency,
     otherCurrencyTotals,
     byMethod,
+    revenueByProperty,
+    vacancyTrend,
+    leaseExpirationTimeline,
     totalArrearsByCurrency: Array.from(totalArrearsByCurrencyMap.entries()).map(([currency, amount]) => ({
       currency,
       amount,
@@ -639,6 +765,40 @@ export function getLeaseAgreementData(leaseId: string) {
   });
 }
 
+export function getInvoiceDetail(invoiceId: string) {
+  return prisma.rentInvoice.findUnique({
+    where: { id: invoiceId },
+    include: {
+      lease: {
+        include: {
+          tenant: true,
+          unit: { include: { property: { include: { landlord: true } } } },
+        },
+      },
+      payments: { include: { receipt: true }, orderBy: { paidAt: "asc" } },
+    },
+  });
+}
+
+export function getReceiptDetail(receiptId: string) {
+  return prisma.receipt.findUnique({
+    where: { id: receiptId },
+    include: {
+      payment: {
+        include: {
+          invoice: {
+            include: {
+              lease: {
+                include: { tenant: true, unit: { include: { property: { include: { landlord: true } } } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 export function getLeaseWithDetails(leaseId: string) {
   return prisma.lease.findUnique({
     where: { id: leaseId },
@@ -659,6 +819,7 @@ export function getLeaseWithDetails(leaseId: string) {
           conductedBy: { select: { name: true } },
         },
       },
+      signatures: { include: { signer: { select: { name: true } } } },
     },
   });
 }
@@ -684,6 +845,7 @@ export function getTenantActiveLeases(tenantId: string) {
       rentChanges: { orderBy: { effectiveDate: "asc" } },
       complaints: { orderBy: { createdAt: "desc" }, include: { images: true } },
       reviews: true,
+      signatures: { include: { signer: { select: { name: true } } } },
     },
   });
 }

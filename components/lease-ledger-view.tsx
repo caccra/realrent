@@ -13,7 +13,7 @@ export function LeaseLedgerView({ invoices }: { invoices: Invoice[] }) {
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-medium text-slate-900">Ledger</h2>
-        <span className={`text-sm font-semibold ${currentBalance > 0 ? "text-red-700" : "text-emerald-700"}`}>
+        <span className={`text-sm font-semibold ${currentBalance > 0 ? "text-red-700" : "text-ivy-700"}`}>
           {currentBalance > 0 ? `Owes ${formatMoney(currentBalance, currency)}` : "Paid up"}
         </span>
       </div>

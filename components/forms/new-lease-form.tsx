@@ -38,15 +38,15 @@ export function NewLeaseForm({
 
   if (created) {
     return (
-      <Card className="mb-4 border-emerald-300 bg-emerald-50">
-        <p className="font-medium text-emerald-900">Lease created</p>
+      <Card className="mb-4 border-ivy-300 bg-ivy-50">
+        <p className="font-medium text-ivy-900">Lease created</p>
         {created.tempPassword ? (
-          <p className="mt-2 text-sm text-emerald-800">
+          <p className="mt-2 text-sm text-ivy-800">
             A new tenant account was created for {created.tenantPhone}. Share this temporary
             password with them so they can log in: <span className="font-mono font-semibold">{created.tempPassword}</span>
           </p>
         ) : (
-          <p className="mt-2 text-sm text-emerald-800">
+          <p className="mt-2 text-sm text-ivy-800">
             Linked to the existing tenant account for {created.tenantPhone}.
           </p>
         )}
@@ -88,7 +88,7 @@ export function NewLeaseForm({
       <h3 className="mb-4 text-sm font-medium text-slate-900">New lease</h3>
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <input type="hidden" {...register("unitId")} />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="tenantName">Tenant name</Label>
             <Input id="tenantName" {...register("tenantName")} />
@@ -103,6 +103,11 @@ export function NewLeaseForm({
             <Label htmlFor="startDate">Start date</Label>
             <Input id="startDate" type="date" {...register("startDate")} />
             <FieldError message={errors.startDate?.message} />
+          </div>
+          <div>
+            <Label htmlFor="endDate">End date (optional)</Label>
+            <Input id="endDate" type="date" {...register("endDate")} />
+            <FieldError message={errors.endDate?.message} />
           </div>
           <div>
             <Label htmlFor="rentAmount">Rent amount (UGX)</Label>

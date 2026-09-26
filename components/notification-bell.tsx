@@ -136,7 +136,7 @@ export function NotificationBell() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                className="text-xs font-medium text-ivy-700 hover:text-ivy-800"
               >
                 Mark all read
               </button>
@@ -152,7 +152,7 @@ export function NotificationBell() {
                   type="button"
                   onClick={() => handleNotificationClick(n)}
                   className={`block w-full border-b border-slate-50 px-4 py-3 text-left text-sm hover:bg-slate-50 ${
-                    n.read ? "bg-white" : "bg-emerald-50"
+                    n.read ? "bg-white" : "bg-ivy-50"
                   }`}
                 >
                   <p className="font-medium text-slate-900">{n.title}</p>

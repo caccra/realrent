@@ -12,7 +12,7 @@ export function UnitFields({
   isCommercial?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div>
         <Label htmlFor="label">Unit label</Label>
         <Input id="label" placeholder="A1" {...register("label")} />

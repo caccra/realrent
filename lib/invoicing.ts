@@ -36,3 +36,9 @@ export function generateReceiptNumber(): string {
   const random = Math.random().toString(36).slice(2, 6).toUpperCase();
   return `RCT-${timestamp}-${random}`;
 }
+
+export function generateInvoiceNumber(): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `INV-${timestamp}-${random}`;
+}

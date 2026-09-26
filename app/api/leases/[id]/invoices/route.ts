@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { nextInvoicePeriod } from "@/lib/invoicing";
+import { nextInvoicePeriod, generateInvoiceNumber } from "@/lib/invoicing";
 import { canManageProperty } from "@/lib/authorization";
+import { formatMoney } from "@/lib/money";
+import { emailLayout, sendEmail } from "@/lib/email";
+import { sendSms } from "@/lib/sms";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (_request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -15,6 +19,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const lease = await prisma.lease.findUnique({
     where: { id },
     include: {
+      tenant: true,
       unit: { include: { property: true } },
       invoices: { orderBy: { periodEnd: "desc" }, take: 1 },
     },
@@ -44,14 +49,55 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   });
   const amountDue = dueRentChange ? dueRentChange.newRentAmount : lease.rentAmount;
 
-  const [invoice] = await prisma.$transaction([
-    prisma.rentInvoice.create({
-      data: { leaseId: lease.id, periodStart, periodEnd, dueDate, amountDue, currency: lease.currency },
-    }),
-    ...(dueRentChange && Number(dueRentChange.newRentAmount) !== Number(lease.rentAmount)
-      ? [prisma.lease.update({ where: { id: lease.id }, data: { rentAmount: dueRentChange.newRentAmount } })]
-      : []),
-  ]);
+  const invoice = await prisma.$transaction(async (tx) => {
+    const created = await tx.rentInvoice.create({
+      data: {
+        leaseId: lease.id,
+        invoiceNumber: generateInvoiceNumber(),
+        periodStart,
+        periodEnd,
+        dueDate,
+        amountDue,
+        currency: lease.currency,
+      },
+    });
+
+    if (dueRentChange && Number(dueRentChange.newRentAmount) !== Number(lease.rentAmount)) {
+      await tx.lease.update({ where: { id: lease.id }, data: { rentAmount: dueRentChange.newRentAmount } });
+    }
+
+    await tx.notification.create({
+      data: {
+        userId: lease.tenantId,
+        type: "INVOICE_GENERATED",
+        title: "Rent invoice ready",
+        message: `Your rent invoice for ${lease.unit.property.name} — ${lease.unit.label} is ready: ${formatMoney(
+          created.amountDue,
+          created.currency
+        )} due ${created.dueDate.toLocaleDateString("en-UG")}.`,
+        link: `/tenant/invoices/${created.id}`,
+      },
+    });
+
+    return created;
+  });
+
+  await sendEmail({
+    to: lease.tenant.email,
+    subject: "Your rent invoice is ready",
+    html: emailLayout(
+      "Rent invoice ready",
+      `<p>Your rent invoice for <strong>${lease.unit.property.name} — ${lease.unit.label}</strong> is ready:</p>
+       <p><strong>${formatMoney(invoice.amountDue, invoice.currency)}</strong> due ${invoice.dueDate.toLocaleDateString("en-UG")}.</p>`,
+      `/tenant/invoices/${invoice.id}`,
+      "View invoice"
+    ),
+  });
+
+  await sendSms({
+    to: lease.tenant.phone,
+    message: `Kezavi: Rent invoice ready for ${lease.unit.property.name} - ${lease.unit.label}: ${formatMoney(invoice.amountDue, invoice.currency)} due ${invoice.dueDate.toLocaleDateString("en-UG")}.`,
+  });
 
   return NextResponse.json(invoice);
-}
+});

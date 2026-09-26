@@ -6,10 +6,11 @@ import { canManageProperty } from "@/lib/authorization";
 import { invoiceDisplayStatus } from "@/lib/invoice-status";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { formatMoney } from "@/lib/money";
+import { withErrorHandling } from "@/lib/api-handler";
 
 const COOLDOWN_HOURS = 12;
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (_request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -64,4 +65,4 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   });
 
   return NextResponse.json({ ok: true });
-}
+});

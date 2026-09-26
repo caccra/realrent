@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Badge, Card } from "@/components/ui";
 import { ComplaintStatusForm } from "@/components/forms/complaint-status-form";
 import { formatPhoneForDisplay } from "@/lib/phone";
+import { WhatsAppLink } from "@/components/whatsapp-link";
 import type { getComplaintDetail } from "@/lib/data";
 
 const STATUS_TONE = {
@@ -50,8 +51,12 @@ export function ComplaintDetailView({
           <div>
             <p className="text-sm text-slate-500">Tenant</p>
             <p className="text-sm text-slate-900">{complaint.tenant.name}</p>
-            <p className="text-sm text-slate-500">
+            <p className="flex items-center gap-2 text-sm text-slate-500">
               {complaint.tenant.phone ? formatPhoneForDisplay(complaint.tenant.phone) : "—"}
+              <WhatsAppLink
+                number={complaint.tenant.whatsappNumber}
+                message={`Hi ${complaint.tenant.name}, following up on your complaint: "${complaint.title}"`}
+              />
             </p>
           </div>
           <div>
@@ -59,7 +64,7 @@ export function ComplaintDetailView({
             <p className="text-sm text-slate-900">
               {complaint.lease.unit.property.name} — {complaint.lease.unit.label}
             </p>
-            <Link href={leaseHref} className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
+            <Link href={leaseHref} className="text-sm font-medium text-ivy-700 hover:text-ivy-800">
               View lease →
             </Link>
           </div>

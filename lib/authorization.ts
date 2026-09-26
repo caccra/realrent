@@ -2,14 +2,20 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * A property can be managed by its owning landlord, by a property manager
- * the landlord has appointed to it (full landlord-equivalent access), or by
- * a caretaker the landlord has appointed to it (operational access only).
+ * the landlord has appointed to it (full landlord-equivalent access), by a
+ * caretaker the landlord has appointed to it (operational access only), or
+ * unconditionally by a super admin (platform-wide override for support).
+ * A regular (non-super) admin does NOT get this bypass — their access stays
+ * scoped to the dedicated /admin support tooling (complaints, maintenance).
  */
 export async function canManageProperty(
   userId: string,
   role: string | null | undefined,
   propertyId: string
 ): Promise<boolean> {
+  if (role === "SUPER_ADMIN") {
+    return true;
+  }
   if (role === "LANDLORD") {
     const property = await prisma.property.findUnique({ where: { id: propertyId } });
     return property?.landlordId === userId;
@@ -39,6 +45,9 @@ export async function canManageTenant(
   role: string | null | undefined,
   tenantId: string
 ): Promise<boolean> {
+  if (role === "SUPER_ADMIN") {
+    return true;
+  }
   if (role === "LANDLORD") {
     const lease = await prisma.lease.findFirst({
       where: { tenantId, unit: { property: { landlordId: userId } } },

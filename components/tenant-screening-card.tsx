@@ -9,7 +9,7 @@ export function TenantScreeningCard({
 }) {
   return (
     <Card className="mb-6">
-      <p className="mb-3 text-sm font-medium text-slate-900">Tenant history (across RealRent)</p>
+      <p className="mb-3 text-sm font-medium text-slate-900">Tenant history (across Kezavi)</p>
       <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
           <p className="text-slate-500">Leases</p>

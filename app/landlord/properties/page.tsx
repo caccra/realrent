@@ -19,7 +19,7 @@ export default async function PropertiesPage() {
       {isLandlord && (
         <Link
           href="/landlord/properties/new"
-          className="mb-6 inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+          className="mb-6 inline-flex items-center justify-center rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
         >
           Add property
         </Link>
@@ -46,7 +46,7 @@ export default async function PropertiesPage() {
                 href={`/landlord/properties/${property.id}`}
                 data-search-text={`${property.name} ${property.address}`.toLowerCase()}
               >
-                <Card className="h-full overflow-hidden p-0 hover:border-emerald-300">
+                <Card className="h-full overflow-hidden p-0 hover:border-ivy-300">
                   <div className="relative aspect-video bg-slate-100">
                     {property.images[0] ? (
                       <Image

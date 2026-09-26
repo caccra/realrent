@@ -3,4 +3,5 @@ export const CARETAKER_NAV = [
   { href: "/caretaker/payments", label: "Payments" },
   { href: "/caretaker/complaints", label: "Complaints" },
   { href: "/caretaker/maintenance", label: "Maintenance" },
+  { href: "/account/security", label: "Security" },
 ];

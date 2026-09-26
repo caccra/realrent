@@ -3,14 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { paymentPreferencesSchema } from "@/lib/validations/payment-preferences";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
-export async function PATCH(request: Request) {
+export const PATCH = withErrorHandling(async (request) => {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "LANDLORD") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = paymentPreferencesSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
@@ -34,4 +35,4 @@ export async function PATCH(request: Request) {
   });
 
   return NextResponse.json({ ok: true, updated });
-}
+});

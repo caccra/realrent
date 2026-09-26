@@ -10,6 +10,7 @@ export function PropertyInquiryForm({ propertyId }: { propertyId: string }) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [wantsViewing, setWantsViewing] = useState(false);
 
   const {
     register,
@@ -39,9 +40,9 @@ export function PropertyInquiryForm({ propertyId }: { propertyId: string }) {
 
   if (sent) {
     return (
-      <Card className="border-emerald-200 bg-emerald-50">
-        <p className="text-sm font-medium text-emerald-900">Thanks — your inquiry has been sent.</p>
-        <p className="mt-1 text-sm text-emerald-800">The seller will reach out to you directly.</p>
+      <Card className="border-ivy-200 bg-ivy-50">
+        <p className="text-sm font-medium text-ivy-900">Thanks — your inquiry has been sent.</p>
+        <p className="mt-1 text-sm text-ivy-800">The seller will reach out to you directly.</p>
       </Card>
     );
   }
@@ -72,9 +73,24 @@ export function PropertyInquiryForm({ propertyId }: { propertyId: string }) {
           <Textarea id="message" rows={3} placeholder="I'd like to know more about…" {...register("message")} />
           <FieldError message={errors.message?.message} />
         </div>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={wantsViewing}
+            onChange={(e) => setWantsViewing(e.target.checked)}
+          />
+          I&apos;d like to schedule a viewing
+        </label>
+        {wantsViewing && (
+          <div>
+            <Label htmlFor="requestedViewingAt">Preferred date &amp; time</Label>
+            <Input id="requestedViewingAt" type="datetime-local" {...register("requestedViewingAt")} />
+            <FieldError message={errors.requestedViewingAt?.message} />
+          </div>
+        )}
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
         <Button type="submit" disabled={submitting}>
-          {submitting ? "Sending…" : "Contact seller"}
+          {submitting ? "Sending…" : wantsViewing ? "Request viewing" : "Contact seller"}
         </Button>
       </form>
     </Card>

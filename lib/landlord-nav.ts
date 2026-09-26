@@ -7,6 +7,7 @@ export const LANDLORD_NAV = [
   { href: "/landlord/maintenance", label: "Maintenance" },
   { href: "/landlord/reports", label: "Reports" },
   { href: "/landlord/settings", label: "Settings" },
+  { href: "/account/security", label: "Security" },
 ];
 
 // Property managers get the same working pages as a landlord, minus

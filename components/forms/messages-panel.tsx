@@ -99,12 +99,12 @@ export function MessagesPanel({ leaseId }: { leaseId: string }) {
               <div key={m.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                    isOwn ? "bg-emerald-700 text-white" : "bg-white text-slate-900 border border-slate-200"
+                    isOwn ? "bg-ivy-700 text-white" : "bg-white text-slate-900 border border-slate-200"
                   }`}
                 >
                   {!isOwn && <p className="mb-0.5 text-xs font-medium opacity-70">{m.sender.name}</p>}
                   <p>{m.body}</p>
-                  <p className={`mt-1 text-[10px] ${isOwn ? "text-emerald-100" : "text-slate-400"}`}>
+                  <p className={`mt-1 text-[10px] ${isOwn ? "text-ivy-100" : "text-slate-400"}`}>
                     {new Date(m.createdAt).toLocaleString("en-UG")}
                   </p>
                 </div>

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyTwoFactorToken } from "@/lib/two-factor";
 
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
@@ -17,6 +18,7 @@ export const authOptions: AuthOptions = {
       credentials: {
         phone: { label: "Phone", type: "text" },
         password: { label: "Password", type: "password" },
+        totpCode: { label: "Two-factor code", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.phone || !credentials?.password) return null;
@@ -39,6 +41,16 @@ export const authOptions: AuthOptions = {
 
         if (user.suspended) {
           throw new Error("This account has been suspended. Contact support for help.");
+        }
+
+        if (user.twoFactorEnabled && user.twoFactorSecret) {
+          if (!credentials.totpCode) {
+            throw new Error("2FA_REQUIRED");
+          }
+          const codeValid = await verifyTwoFactorToken(user.twoFactorSecret, credentials.totpCode);
+          if (!codeValid) {
+            throw new Error("Invalid two-factor code");
+          }
         }
 
         return {

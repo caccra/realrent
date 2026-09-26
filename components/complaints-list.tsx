@@ -55,7 +55,7 @@ export function ComplaintsList({ complaints, basePath }: { complaints: Complaint
               <td className="px-4 py-2 text-right">
                 <Link
                   href={`${basePath}/${c.id}`}
-                  className="font-medium text-emerald-700 hover:text-emerald-800"
+                  className="font-medium text-ivy-700 hover:text-ivy-800"
                 >
                   View
                 </Link>

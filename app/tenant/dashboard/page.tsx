@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { getTenantActiveLeases, getTenantDocuments, getTenantStats } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge, Card } from "@/components/ui";
@@ -11,11 +12,17 @@ import { NewComplaintForm } from "@/components/forms/new-complaint-form";
 import { TenantPropertyCard } from "@/components/tenant-property-card";
 import { ReviewForm } from "@/components/forms/review-form";
 import { SignedAgreementUpload } from "@/components/forms/signed-agreement-upload";
+import { LeaseSignatureSection } from "@/components/forms/lease-signature-section";
 import { TenantDocumentsSection } from "@/components/forms/tenant-documents-section";
 import { MessagesPanel } from "@/components/forms/messages-panel";
 import { LeaseLedgerView } from "@/components/lease-ledger-view";
+import { WhatsAppNumberForm } from "@/components/forms/whatsapp-number-form";
+import { WhatsAppLink } from "@/components/whatsapp-link";
 
-const NAV = [{ href: "/tenant/dashboard", label: "Dashboard" }];
+const NAV = [
+  { href: "/tenant/dashboard", label: "Dashboard" },
+  { href: "/account/security", label: "Security" },
+];
 
 const STATUS_TONE = {
   PAID: "green",
@@ -38,10 +45,11 @@ function formatByCurrency(entries: { currency: string; amount: number }[]): stri
 
 export default async function TenantDashboard() {
   const user = await requireUser("TENANT");
-  const [leases, stats, documents] = await Promise.all([
+  const [leases, stats, documents, fullUser] = await Promise.all([
     getTenantActiveLeases(user.id),
     getTenantStats(user.id),
     getTenantDocuments(user.id),
+    prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { whatsappNumber: true } }),
   ]);
 
   return (
@@ -77,6 +85,10 @@ export default async function TenantDashboard() {
         </Card>
       </div>
 
+      <div className="mb-6">
+        <WhatsAppNumberForm currentNumber={fullUser.whatsappNumber} />
+      </div>
+
       <TenantDocumentsSection documents={documents} />
 
       {leases.length === 0 ? (
@@ -96,10 +108,16 @@ export default async function TenantDashboard() {
                 <h2 className="text-lg font-medium text-slate-900">
                   {lease.unit.property.name} — {lease.unit.label}
                 </h2>
-                <p className="text-sm text-slate-500">Landlord: {lease.unit.property.landlord.name}</p>
+                <p className="flex items-center gap-2 text-sm text-slate-500">
+                  Landlord: {lease.unit.property.landlord.name}
+                  <WhatsAppLink
+                    number={lease.unit.property.landlord.whatsappNumber}
+                    message={`Hi ${lease.unit.property.landlord.name}, this is ${user.name} from ${lease.unit.property.name} — ${lease.unit.label}.`}
+                  />
+                </p>
                 <Link
                   href={`/tenant/leases/${lease.id}/agreement`}
-                  className="mt-1 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                  className="mt-1 inline-block text-sm font-medium text-ivy-700 hover:text-ivy-800"
                 >
                   View auto-generated agreement →
                 </Link>
@@ -113,7 +131,7 @@ export default async function TenantDashboard() {
                       href={lease.agreementFileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                      className="text-sm font-medium text-ivy-700 hover:text-ivy-800"
                     >
                       {lease.agreementFileName ?? "Download file"} →
                     </a>
@@ -125,6 +143,13 @@ export default async function TenantDashboard() {
                   currentFileName={lease.signedAgreementFileName}
                 />
               </Card>
+
+              <LeaseSignatureSection
+                leaseId={lease.id}
+                signatures={lease.signatures}
+                canSign={!lease.signatures.some((s) => s.signerId === user.id)}
+                signAsRole="TENANT"
+              />
 
               <TenantPropertyCard lease={lease} />
 
@@ -183,14 +208,22 @@ export default async function TenantDashboard() {
                         </div>
                         <Badge tone={STATUS_TONE[status]}>{status}</Badge>
                       </div>
-                      {successfulPayment?.receipt && (
+                      <div className="mt-3 flex items-center gap-4">
                         <Link
-                          href={`/tenant/receipts/${successfulPayment.receipt.id}`}
-                          className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                          href={`/tenant/invoices/${invoice.id}`}
+                          className="text-sm font-medium text-ivy-700 hover:text-ivy-800"
                         >
-                          View receipt →
+                          View invoice →
                         </Link>
-                      )}
+                        {successfulPayment?.receipt && (
+                          <Link
+                            href={`/tenant/receipts/${successfulPayment.receipt.id}`}
+                            className="text-sm font-medium text-ivy-700 hover:text-ivy-800"
+                          >
+                            View receipt →
+                          </Link>
+                        )}
+                      </div>
                     </Card>
                   );
                 })}

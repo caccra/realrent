@@ -12,7 +12,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function TermsOfServicePage() {
   return (
-    <div className="flex flex-1 flex-col bg-slate-50">
+    <div className="flex flex-1 flex-col bg-sand">
       <PublicHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
@@ -21,19 +21,19 @@ export default function TermsOfServicePage() {
 
         <Section title="1. Acceptance of these terms">
           <p>
-            By creating an account or using RealRent, you agree to these Terms of Service and our{" "}
-            <a href="/privacy" className="text-emerald-700 hover:text-emerald-800">
+            By creating an account or using Kezavi, you agree to these Terms of Service and our{" "}
+            <a href="/privacy" className="text-ivy-700 hover:text-ivy-800">
               Privacy Policy
             </a>
             . If you do not agree, please do not use the platform.
           </p>
         </Section>
 
-        <Section title="2. What RealRent is">
+        <Section title="2. What Kezavi is">
           <p>
-            RealRent is a property and tenancy management tool. It helps landlords, tenants, and
+            Kezavi is a property and tenancy management tool. It helps landlords, tenants, and
             appointed caretakers manage properties, leases, rent invoicing, cash payment records,
-            maintenance requests, and communication. RealRent does not own, manage, broker, or
+            maintenance requests, and communication. Kezavi does not own, manage, broker, or
             take title to any property listed on the platform.
           </p>
         </Section>
@@ -64,7 +64,7 @@ export default function TermsOfServicePage() {
           <p>
             Landlords are solely responsible for the accuracy of their property listings,
             including ownership, availability, pricing, and legal right to lease the property.
-            RealRent does not verify land title, ownership, or the legal status of any listed
+            Kezavi does not verify land title, ownership, or the legal status of any listed
             property. Prospective tenants should independently verify a property and landlord
             before entering into any agreement or making a payment.
           </p>
@@ -72,10 +72,10 @@ export default function TermsOfServicePage() {
 
         <Section title="5. Payments">
           <p>
-            RealRent currently supports recording cash payments and generating receipts within
-            the platform. RealRent does not itself process, hold, or transmit funds between
+            Kezavi currently supports recording cash payments and generating receipts within
+            the platform. Kezavi does not itself process, hold, or transmit funds between
             tenants and landlords at this time. Any payment arrangement remains directly between
-            the tenant and landlord/caretaker; RealRent is not a party to that transaction and is
+            the tenant and landlord/caretaker; Kezavi is not a party to that transaction and is
             not responsible for payment disputes.
           </p>
         </Section>
@@ -101,16 +101,16 @@ export default function TermsOfServicePage() {
 
         <Section title="8. Termination">
           <p>
-            You may stop using RealRent at any time. We may suspend or terminate an account that
+            You may stop using Kezavi at any time. We may suspend or terminate an account that
             violates these terms or poses a risk to other users, with notice where practical.
           </p>
         </Section>
 
         <Section title="9. Disclaimers and limitation of liability">
           <p>
-            RealRent is provided &quot;as is.&quot; We do not guarantee the accuracy of listings,
+            Kezavi is provided &quot;as is.&quot; We do not guarantee the accuracy of listings,
             the conduct of landlords, tenants, or caretakers, or that the service will be
-            uninterrupted or error-free. To the maximum extent permitted by law, RealRent is not
+            uninterrupted or error-free. To the maximum extent permitted by law, Kezavi is not
             liable for indirect, incidental, or consequential damages arising from your use of
             the platform, including disputes between landlords and tenants.
           </p>
@@ -126,7 +126,7 @@ export default function TermsOfServicePage() {
 
         <Section title="11. Changes to these terms">
           <p>
-            We may update these terms as the product evolves. Continued use of RealRent after an
+            We may update these terms as the product evolves. Continued use of Kezavi after an
             update constitutes acceptance of the revised terms.
           </p>
         </Section>
@@ -134,7 +134,7 @@ export default function TermsOfServicePage() {
         <Section title="12. Contact us">
           <p>
             Questions about these terms can be sent to{" "}
-            <a href="mailto:legal@realrent.app" className="text-emerald-700 hover:text-emerald-800">
+            <a href="mailto:legal@realrent.app" className="text-ivy-700 hover:text-ivy-800">
               legal@realrent.app
             </a>
             .

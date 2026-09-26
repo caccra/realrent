@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deletePropertyImageFile } from "@/lib/storage";
 import { canManageProperty } from "@/lib/authorization";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string; imageId: string }> }
-) {
+export const PATCH = withErrorHandling(async (
+  request,
+  { params }
+) => {
   const { id, imageId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -34,12 +35,12 @@ export async function PATCH(
   ]);
 
   return NextResponse.json({ ok: true });
-}
+});
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string; imageId: string }> }
-) {
+export const DELETE = withErrorHandling(async (
+  _request,
+  { params }
+) => {
   const { id, imageId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -69,4 +70,4 @@ export async function DELETE(
   await deletePropertyImageFile(image.url);
 
   return NextResponse.json({ ok: true });
-}
+});

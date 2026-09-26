@@ -7,8 +7,12 @@ import { generateReceiptNumber } from "@/lib/invoicing";
 import { canManageProperty } from "@/lib/authorization";
 import { invoiceTotalDue } from "@/lib/invoice-total";
 import { logAudit } from "@/lib/audit-log";
+import { emailLayout, sendEmail } from "@/lib/email";
+import { sendSms } from "@/lib/sms";
+import { formatMoney } from "@/lib/money";
+import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -18,7 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const invoice = await prisma.rentInvoice.findUnique({
     where: { id },
     include: {
-      lease: { include: { unit: { include: { property: true } } } },
+      lease: { include: { tenant: true, unit: { include: { property: true } } } },
       payments: true,
     },
   });
@@ -30,7 +34,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "This invoice is already fully paid" }, { status: 409 });
   }
 
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const parsed = cashPaymentSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
@@ -81,5 +85,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     metadata: { invoiceId: invoice.id, amount: parsed.data.amount },
   });
 
+  await sendEmail({
+    to: invoice.lease.tenant.email,
+    subject: "Payment received — receipt attached",
+    html: emailLayout(
+      "Payment received",
+      `<p>We've recorded your payment of <strong>${formatMoney(parsed.data.amount, invoice.currency)}</strong> for
+       ${invoice.lease.unit.property.name} — ${invoice.lease.unit.label}.</p>
+       <p>Receipt number: <strong>${result.receipt.receiptNumber}</strong></p>`,
+      `/tenant/receipts/${result.receipt.id}`,
+      "View receipt"
+    ),
+  });
+
+  await sendSms({
+    to: invoice.lease.tenant.phone,
+    message: `Kezavi: Payment of ${formatMoney(parsed.data.amount, invoice.currency)} received for ${invoice.lease.unit.property.name} - ${invoice.lease.unit.label}. Receipt: ${result.receipt.receiptNumber}.`,
+  });
+
   return NextResponse.json(result);
-}
+});

@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { canManageTenant } from "@/lib/authorization";
 import { TENANT_DOCUMENT_TYPES } from "@/lib/validations/tenant-document";
 import { logAudit } from "@/lib/audit-log";
+import { withErrorHandling } from "@/lib/api-handler";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -50,4 +51,4 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   });
 
   return NextResponse.json(updated);
-}
+});

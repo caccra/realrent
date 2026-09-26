@@ -31,7 +31,11 @@ export default async function CaretakerLeaseDetailPage({
         lease={lease}
         canEndLease={false}
         canReviewTenant={false}
+        canSignAsLandlord={false}
+        currentUserId={user.id}
         agreementHref={`/caretaker/leases/${lease.id}/agreement`}
+        invoiceHrefPrefix="/caretaker/invoices"
+        receiptHrefPrefix="/caretaker/receipts"
         screeningReport={screeningReport}
       />
     </DashboardShell>

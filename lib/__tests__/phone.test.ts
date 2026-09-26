@@ -37,4 +37,9 @@ describe("formatPhoneForDisplay", () => {
   it("returns the input unchanged if it isn't in normalized form", () => {
     expect(formatPhoneForDisplay("0771234567")).toBe("0771234567");
   });
+
+  it("returns an empty string instead of throwing for null/undefined", () => {
+    expect(formatPhoneForDisplay(null)).toBe("");
+    expect(formatPhoneForDisplay(undefined)).toBe("");
+  });
 });
