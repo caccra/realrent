@@ -40,7 +40,7 @@ export const POST = withErrorHandling(async (_request, { params }) => {
     return NextResponse.json({ error: "There is no remaining balance on this invoice" }, { status: 409 });
   }
 
-  const appUrl = process.env.NEXTAUTH_URL || "https://realrent-lime.vercel.app";
+  const appUrl = process.env.NEXTAUTH_URL || "https://kezavi.com";
   const result = await initiateFlutterwavePayment({
     invoiceId: invoice.id,
     amount: balance,

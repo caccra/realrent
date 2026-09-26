@@ -46,7 +46,7 @@ export async function sendEmail({
 }
 
 export function emailLayout(title: string, bodyHtml: string, actionUrl?: string, actionLabel?: string): string {
-  const appUrl = process.env.NEXTAUTH_URL || "https://realrent-lime.vercel.app";
+  const appUrl = process.env.NEXTAUTH_URL || "https://kezavi.com";
   return `
     <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; color: #0f172a;">
       <h1 style="font-size: 18px; margin: 0 0 16px;">${title}</h1>

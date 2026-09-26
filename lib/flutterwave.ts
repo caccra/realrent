@@ -55,7 +55,7 @@ export async function initiateFlutterwavePayment(params: {
       currency: params.currency,
       redirect_url: params.redirectUrl,
       customer: {
-        email: params.customerEmail || "no-reply@realrent.app",
+        email: params.customerEmail || "no-reply@kezavi.com",
         phonenumber: params.customerPhone || undefined,
         name: params.customerName,
       },

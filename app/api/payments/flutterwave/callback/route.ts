@@ -13,7 +13,7 @@ export const GET = withErrorHandling(async (request) => {
   const url = new URL(request.url);
   const status = url.searchParams.get("status");
   const transactionId = url.searchParams.get("transaction_id");
-  const appUrl = process.env.NEXTAUTH_URL || "https://realrent-lime.vercel.app";
+  const appUrl = process.env.NEXTAUTH_URL || "https://kezavi.com";
 
   if (status === "cancelled" || !transactionId) {
     return NextResponse.redirect(`${appUrl}/tenant/dashboard?payment=cancelled`);

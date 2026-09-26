@@ -134,8 +134,8 @@ export default function TermsOfServicePage() {
         <Section title="12. Contact us">
           <p>
             Questions about these terms can be sent to{" "}
-            <a href="mailto:legal@realrent.app" className="text-ivy-700 hover:text-ivy-800">
-              legal@realrent.app
+            <a href="mailto:legal@kezavi.com" className="text-ivy-700 hover:text-ivy-800">
+              legal@kezavi.com
             </a>
             .
           </p>

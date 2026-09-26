@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 // degrade to the static routes instead.
 export const dynamic = "force-dynamic";
 
-const SITE_URL = process.env.NEXTAUTH_URL || "https://realrent-lime.vercel.app";
+const SITE_URL = process.env.NEXTAUTH_URL || "https://kezavi.com";
 
 const STATIC_ROUTES = [
   "",

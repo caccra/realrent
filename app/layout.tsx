@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = process.env.NEXTAUTH_URL || "https://realrent-lime.vercel.app";
+const SITE_URL = process.env.NEXTAUTH_URL || "https://kezavi.com";
 const SITE_DESCRIPTION = "Digital leases, rent tracking, and payments for Uganda landlords and tenants.";
 
 export const metadata: Metadata = {

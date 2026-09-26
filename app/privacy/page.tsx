@@ -144,8 +144,8 @@ export default function PrivacyPolicyPage() {
         <Section title="10. Contact us">
           <p>
             Questions about this policy or your data can be sent to{" "}
-            <a href="mailto:privacy@realrent.app" className="text-ivy-700 hover:text-ivy-800">
-              privacy@realrent.app
+            <a href="mailto:privacy@kezavi.com" className="text-ivy-700 hover:text-ivy-800">
+              privacy@kezavi.com
             </a>
             .
           </p>
