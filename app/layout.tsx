@@ -3,6 +3,7 @@ import { Figtree, Bricolage_Grotesque, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { InstallPrompt } from "@/components/install-prompt";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -43,6 +44,12 @@ export const metadata: Metadata = {
     title: "Kezavi",
     description: SITE_DESCRIPTION,
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kezavi",
+  },
 };
 
 export const viewport: Viewport = {
@@ -59,6 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>{children}</Providers>
         <ServiceWorkerRegister />
+        <InstallPrompt />
       </body>
     </html>
   );

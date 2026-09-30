@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>You're offline — RealRent</title>
+    <title>You're offline — Kezavi</title>
     <style>
       body {
         margin: 0;
@@ -11,27 +11,37 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f8fafc;
+        background: #f6f4ee;
         font-family: system-ui, -apple-system, sans-serif;
-        color: #0f172a;
+        color: #0f1e1a;
         text-align: center;
         padding: 24px;
       }
       .card {
         max-width: 360px;
       }
+      .mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1b4d3a;
+        margin-bottom: 16px;
+      }
       h1 {
         font-size: 1.25rem;
         margin-bottom: 8px;
       }
       p {
-        color: #64748b;
+        color: #57685f;
         font-size: 0.95rem;
         line-height: 1.5;
       }
       button {
         margin-top: 20px;
-        background: #047857;
+        background: #1b4d3a;
         color: white;
         border: none;
         border-radius: 6px;
@@ -39,12 +49,28 @@
         font-size: 0.9rem;
         cursor: pointer;
       }
+      button:hover {
+        background: #153b2e;
+      }
     </style>
   </head>
   <body>
     <div class="card">
+      <span class="mark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+          <path
+            d="M17 30L32 17L47 30"
+            stroke="#F6F4EE"
+            stroke-width="6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <circle cx="32" cy="36" r="6.5" fill="#E8804A" />
+          <path d="M28.6 40.5L35.4 40.5L33.6 48L30.4 48Z" fill="#E8804A" />
+        </svg>
+      </span>
       <h1>You're offline</h1>
-      <p>RealRent needs an internet connection to show up-to-date rent, payment, and lease information.</p>
+      <p>Kezavi needs an internet connection to show up-to-date rent, payment, and lease information.</p>
       <button onclick="location.reload()">Try again</button>
     </div>
   </body>
