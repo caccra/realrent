@@ -105,6 +105,8 @@ const PROPERTY_HOWTO = [
       "Choose \"For rent\" and add units (label, bedrooms, bathrooms, rent, billing cycle) — or choose \"For sale\" and set a price",
       "It shows up in your dashboard immediately; rentals with a vacant unit appear in public search right away",
     ],
+    cta: { label: "List your property free →", href: "/register?role=LANDLORD" },
+    encouragement: "Every property you list is one less spreadsheet, one less missed payment to chase.",
   },
   {
     title: "Searching for a property",
@@ -116,6 +118,8 @@ const PROPERTY_HOWTO = [
       "Contact the landlord or property manager directly by phone, WhatsApp, or email",
       "Sign up as a tenant to inquire about a listing or get added to a lease",
     ],
+    cta: { label: "Browse properties now →", href: "/properties" },
+    encouragement: "Real listings from real landlords on Kezavi — take a look, it costs nothing to browse.",
   },
 ] as const;
 
@@ -195,7 +199,7 @@ export default function HowItWorksPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {PROPERTY_HOWTO.map((guide) => (
-                <Card key={guide.title}>
+                <Card key={guide.title} className="flex h-full flex-col">
                   <h3 className="font-heading text-base font-bold text-slate-900">{guide.title}</h3>
                   <p className="mt-1 text-xs font-medium uppercase tracking-wide text-clay">{guide.who}</p>
                   <ol className="mt-4 space-y-2">
@@ -208,6 +212,15 @@ export default function HowItWorksPage() {
                       </li>
                     ))}
                   </ol>
+                  <div className="mt-auto pt-6">
+                    <p className="text-sm text-slate-500">{guide.encouragement}</p>
+                    <Link
+                      href={guide.cta.href}
+                      className="mt-3 inline-block rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
+                    >
+                      {guide.cta.label}
+                    </Link>
+                  </div>
                 </Card>
               ))}
             </div>
