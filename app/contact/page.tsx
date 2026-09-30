@@ -2,6 +2,8 @@ import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Card } from "@/components/ui";
 import { ContactForm } from "@/components/forms/contact-form";
+import { WhatsAppLink } from "@/components/whatsapp-link";
+import { formatPhoneForDisplay } from "@/lib/phone";
 
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
 const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE;
@@ -49,7 +51,12 @@ export default function ContactPage() {
                 {SUPPORT_PHONE && (
                   <div>
                     <p className="text-slate-500">Phone</p>
-                    <p className="font-medium text-slate-900">{SUPPORT_PHONE}</p>
+                    <a href={`tel:+${SUPPORT_PHONE}`} className="font-medium text-ivy-700 hover:text-ivy-800">
+                      {formatPhoneForDisplay(SUPPORT_PHONE)}
+                    </a>
+                    <div className="mt-1">
+                      <WhatsAppLink number={SUPPORT_PHONE} message="Hi, I have a question about Kezavi." />
+                    </div>
                   </div>
                 )}
                 <div>
