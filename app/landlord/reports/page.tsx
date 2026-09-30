@@ -229,7 +229,7 @@ export default async function ReportsPage() {
                 <th className="py-2 text-right font-medium">Amount owed</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 [&>tr:nth-child(even)]:bg-slate-50">
               {analytics.arrears.map((a) => (
                 <tr key={`${a.tenantId}:${a.currency}`}>
                   <td className="py-2 text-slate-900">{a.tenantName}</td>

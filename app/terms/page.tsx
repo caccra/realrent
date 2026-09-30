@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
         <Section title="3. Accounts and roles">
           <p>
             You must provide accurate registration information and keep your login credentials
-            confidential. Three roles exist:
+            confidential. The following roles exist:
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
@@ -51,6 +51,11 @@ export default function TermsOfServicePage() {
             <li>
               <span className="font-medium text-slate-700">Tenant</span> — is assigned to a unit
               under a lease and can track rent, submit complaints, and upload documents.
+            </li>
+            <li>
+              <span className="font-medium text-slate-700">Property Manager</span> — appointed by
+              a landlord to run specific properties with the same working access as the landlord,
+              excluding the landlord&apos;s own payout settings.
             </li>
             <li>
               <span className="font-medium text-slate-700">Caretaker</span> — appointed by a

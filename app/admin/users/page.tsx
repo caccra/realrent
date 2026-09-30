@@ -31,7 +31,7 @@ export default async function AdminUsersPage() {
               <th className="px-4 py-2" />
             </tr>
           </thead>
-          <tbody id="admin-users-body" className="divide-y divide-slate-100">
+          <tbody id="admin-users-body" className="divide-y divide-slate-100 [&>tr:nth-child(even)]:bg-slate-50">
             {users.map((u) => (
               <tr
                 key={u.id}

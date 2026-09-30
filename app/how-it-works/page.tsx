@@ -21,7 +21,7 @@ const STEPS = [
     title: "Add your tenants",
     description: "Create tenant profiles and connect each tenant to their property and unit.",
     items: ["Contact information", "Lease details and deposit", "Documents (ID, signed agreements)", "Payment and screening history"],
-    footer: "Everything you need about your tenants, in one place.",
+    footer: "Everything you need about your tenants, ready whenever you need it.",
   },
   {
     number: "03",
@@ -61,7 +61,7 @@ const ROLE_GUIDES = [
   },
   {
     role: "For Tenants",
-    summary: "You're renting, and want everything in one place.",
+    summary: "You're renting, and want a clear view of what you owe and when.",
     steps: [
       "Browse listings and contact a landlord — no account needed to look around",
       "Get added to a lease by your landlord (your account is created for you) or sign up to inquire",
@@ -106,7 +106,7 @@ const PROPERTY_HOWTO = [
       "It shows up in your dashboard immediately; rentals with a vacant unit appear in public search right away",
     ],
     cta: { label: "List your property free →", href: "/register?role=LANDLORD" },
-    encouragement: "Every property you list is one less spreadsheet, one less missed payment to chase.",
+    encouragement: "Every property you list is one step closer to rent that collects itself.",
   },
   {
     title: "Searching for a property",

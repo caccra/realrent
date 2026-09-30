@@ -75,6 +75,7 @@ export function PhotoGallery({
                   type="button"
                   onClick={() => onDelete(image.id)}
                   disabled={busyId === image.id}
+                  aria-label="Delete photo"
                   className="ml-auto rounded-full bg-black/60 px-2 py-1 text-xs text-white"
                 >
                   {busyId === image.id ? "…" : "✕"}

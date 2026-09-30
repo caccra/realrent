@@ -61,7 +61,7 @@ export default async function TenantsPage() {
                 <th className="px-4 py-2" />
               </tr>
             </thead>
-            <tbody id="tenants-table-body" className="divide-y divide-slate-100">
+            <tbody id="tenants-table-body" className="divide-y divide-slate-100 [&>tr:nth-child(even)]:bg-slate-50">
               {rows.map(({ lease, balance }) => (
                 <tr
                   key={lease.id}

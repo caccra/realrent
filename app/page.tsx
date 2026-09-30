@@ -80,7 +80,7 @@ const AUDIENCES = [
     bullets: [
       "Pay rent with mobile money in seconds",
       "Report maintenance issues with photos",
-      "Keep every receipt and lease in one place",
+      "Keep every receipt and lease organized and easy to find",
     ],
   },
 ] as const;
@@ -99,7 +99,7 @@ const STEPS = [
   {
     number: "03",
     title: "Collect and report",
-    description: "Rent comes in, statements go out, and you see everything in one place.",
+    description: "Rent comes in, statements go out, and you always know where things stand.",
   },
 ] as const;
 
@@ -120,8 +120,8 @@ export default function Home() {
                 Every property, tenant and landlord. One place.
               </h1>
               <p className="mt-5 max-w-lg text-lg text-slate-600">
-                Kezavi keeps your whole real estate business in one place. Track units, sign leases,
-                collect rent and pay landlords without juggling spreadsheets.
+                Track units, sign leases, and collect rent by Mobile Money — without chasing paperwork
+                or juggling phone calls to figure out who&apos;s paid.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -222,8 +222,8 @@ export default function Home() {
           <div className="mx-auto max-w-2xl px-6">
             <h2 className="text-2xl font-bold text-white sm:text-3xl">Ready to bring it all together?</h2>
             <p className="mt-3 text-ivy-100">
-              Stop juggling spreadsheets, paperwork, and scattered conversations. Bring your properties,
-              tenants, payments, and operations together with Kezavi.
+              Stop tracking rent across notebooks, phone calls, and scattered WhatsApp chats. Run your
+              properties, tenants, and payments from Kezavi instead.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link

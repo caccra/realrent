@@ -5,23 +5,27 @@ import { Card } from "@/components/ui";
 const VALUES = [
   {
     title: "Simplicity",
-    description: "We make complex property management tasks easier to understand and manage.",
+    description:
+      "We'd rather build one clear screen than five configurable ones. If a feature needs a manual, we've usually done something wrong.",
   },
   {
     title: "Transparency",
-    description: "Clear information helps landlords, managers, and tenants make informed decisions.",
+    description:
+      "A landlord and their tenant see the same rent history, the same receipts, the same numbers — no figure that only makes sense to one side.",
   },
   {
-    title: "Efficiency",
-    description: "We help reduce repetitive administrative work and keep important tasks organized.",
+    title: "Automation that's earned",
+    description:
+      "Rent reminders, receipts, and late fees happen on their own, on schedule — not as another thing someone has to remember to do.",
   },
   {
     title: "Reliability",
-    description: "Your property information and operations deserve dependable tools.",
+    description: "Payments and lease records touch people's money and their homes. We'd rather ship it solid than ship it fast.",
   },
   {
-    title: "Customer focus",
-    description: "We build around the everyday needs of the people who manage and live in properties.",
+    title: "Built for how Uganda actually rents",
+    description:
+      "Mobile Money, phone-number logins, WhatsApp contact links — shaped around how landlords and tenants here actually pay and communicate, not adapted from a template built somewhere else.",
   },
 ];
 
@@ -53,17 +57,17 @@ export default function AboutPage() {
             <Card>
               <h2 className="mb-2 text-lg font-medium text-slate-900">Our mission</h2>
               <p className="text-sm text-slate-600">
-                To simplify property management through technology. We believe property
-                professionals should spend less time on administrative tasks and more time growing
-                their businesses and taking care of their properties and tenants.
+                Replace the notebook, the stack of receipts, and the &ldquo;let me check and get back
+                to you&rdquo; with a system that just knows — so landlords spend their time growing
+                their portfolio, not chasing paperwork for it.
               </p>
             </Card>
             <Card>
               <h2 className="mb-2 text-lg font-medium text-slate-900">Our vision</h2>
               <p className="text-sm text-slate-600">
-                A simpler, smarter future for real estate management — where property information
-                is easy to access, payments are easy to track, maintenance is easy to manage, and
-                owners always have a clear picture of their business.
+                Every landlord in Uganda, however many properties they own, always knows exactly
+                who&apos;s paid, who hasn&apos;t, and what needs their attention today — without
+                opening a spreadsheet to find out.
               </p>
             </Card>
           </div>
