@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { currentTaxYearStart, getRentalTaxSummary } from "@/lib/data";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card } from "@/components/ui";
@@ -11,6 +12,13 @@ import { EXPENSE_CATEGORIES } from "@/lib/validations/expense";
 const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
   EXPENSE_CATEGORIES.map((c) => [c.value, c.label])
 );
+
+const ENTITY_GUIDANCE = {
+  INDIVIDUAL:
+    "As an individual, rental income is taxed separately from your other income under URA's individual rental tax schedule, with its own threshold and rate. Confirm the current threshold and rate with URA or your tax advisor before filing.",
+  COMPANY_OR_TRUST:
+    "As a company or trust, rental income is included in your normal corporate income tax return rather than a separate schedule, and expense deductions may be treated differently than for an individual. Confirm the current corporate rate and deduction rules with URA or your tax advisor before filing.",
+} as const;
 
 export default async function RentalTaxPage({
   searchParams,
@@ -24,6 +32,15 @@ export default async function RentalTaxPage({
   const safeStartYear = Number.isFinite(startYear) ? startYear : current;
 
   const summary = await getRentalTaxSummary(user.id, safeStartYear);
+
+  // A property manager's assigned properties can belong to different
+  // landlords who may file as different entity types, so only show
+  // entity-specific guidance when the viewer is the landlord themselves.
+  const taxpayerType =
+    user.role === "LANDLORD"
+      ? (await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { taxpayerType: true } }))
+          .taxpayerType
+      : null;
 
   return (
     <DashboardShell title="Rental Tax Summary" userName={user.name ?? ""} nav={navForRole(user.role)}>
@@ -53,9 +70,21 @@ export default async function RentalTaxPage({
         <p className="mt-1 text-sm text-amber-800">
           It reports real rental income received and expenses recorded on Kezavi for{" "}
           <strong>1 July {summary.periodStart.getFullYear()} – 30 June {summary.periodEnd.getFullYear()}</strong>, the
-          URA rental-tax year. It does not apply any tax rate or threshold — confirm the current individual rental
-          tax rate and threshold with URA or your tax advisor before filing. Amounts are shown per currency as
+          URA rental-tax year. It does not apply any tax rate or threshold. Amounts are shown per currency as
           recorded; USD figures need converting to UGX at the prevailing rate for your return.
+        </p>
+        <p className="mt-2 text-sm text-amber-800">
+          {taxpayerType ? (
+            <>
+              {ENTITY_GUIDANCE[taxpayerType]}{" "}
+              <Link href="/landlord/settings" className="font-medium underline hover:no-underline">
+                Change filing type in Settings
+              </Link>
+              .
+            </>
+          ) : (
+            "Individual and company/trust landlords are taxed under different URA rules — confirm with each property owner which applies before using these figures to file."
+          )}
         </p>
       </Card>
 

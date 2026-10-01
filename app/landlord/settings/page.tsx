@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Card } from "@/components/ui";
 import { PaymentPreferencesForm } from "@/components/forms/payment-preferences-form";
 import { WhatsAppNumberForm } from "@/components/forms/whatsapp-number-form";
+import { TaxpayerTypeForm } from "@/components/forms/taxpayer-type-form";
 import { LANDLORD_NAV } from "@/lib/landlord-nav";
 import { getUserAuditLogs } from "@/lib/data";
 
@@ -40,6 +41,10 @@ export default async function LandlordSettingsPage() {
 
       <div className="mt-6">
         <WhatsAppNumberForm currentNumber={fullUser.whatsappNumber} />
+      </div>
+
+      <div className="mt-6">
+        <TaxpayerTypeForm currentType={fullUser.taxpayerType} />
       </div>
 
       <Card className="mt-6">

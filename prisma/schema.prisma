@@ -15,6 +15,16 @@ enum Role {
   SUPER_ADMIN
 }
 
+/**
+ * How a landlord files rental income tax with URA — individual rental tax is a
+ * separate scheduled tax; a company or trust's rental income is folded into
+ * its normal corporate income tax return instead.
+ */
+enum TaxpayerType {
+  INDIVIDUAL
+  COMPANY_OR_TRUST
+}
+
 enum UnitStatus {
   VACANT
   OCCUPIED
@@ -178,6 +188,8 @@ model User {
   bankName            String?
   bankAccountName     String?
   bankAccountNumber   String?
+
+  taxpayerType TaxpayerType @default(INDIVIDUAL)
 
   suspended       Boolean   @default(false)
   suspendedAt     DateTime?
