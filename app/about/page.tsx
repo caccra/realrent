@@ -52,24 +52,33 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section className="border-t border-slate-200 bg-white py-16">
-          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 px-6 sm:grid-cols-2">
-            <Card>
-              <h2 className="mb-2 text-lg font-medium text-slate-900">Our mission</h2>
-              <p className="text-sm text-slate-600">
-                Replace the notebook, the stack of receipts, and the &ldquo;let me check and get back
-                to you&rdquo; with a system that just knows — so landlords spend their time growing
-                their portfolio, not chasing paperwork for it.
-              </p>
-            </Card>
-            <Card>
-              <h2 className="mb-2 text-lg font-medium text-slate-900">Our vision</h2>
-              <p className="text-sm text-slate-600">
-                Every landlord in Uganda, however many properties they own, always knows exactly
-                who&apos;s paid, who hasn&apos;t, and what needs their attention today — without
-                opening a spreadsheet to find out.
-              </p>
-            </Card>
+        <section className="bg-ivy-900 py-20">
+          <div className="mx-auto max-w-5xl px-6">
+            <p className="text-xs font-semibold tracking-wide text-clay">MISSION &amp; VISION</p>
+            <h2 className="mt-2 max-w-xl font-heading text-2xl font-bold text-white sm:text-3xl">
+              Why we&apos;re building Kezavi
+            </h2>
+
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                <p className="text-xs font-semibold text-clay">OUR MISSION</p>
+                <h3 className="mt-2 font-heading text-lg font-bold text-white">A system that just knows</h3>
+                <p className="mt-3 text-sm text-ivy-100">
+                  Replace the notebook, the stack of receipts, and the &ldquo;let me check and get back
+                  to you&rdquo; with a system that just knows — so landlords spend their time growing
+                  their portfolio, not chasing paperwork for it.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+                <p className="text-xs font-semibold text-clay">OUR VISION</p>
+                <h3 className="mt-2 font-heading text-lg font-bold text-white">Nothing left to wonder about</h3>
+                <p className="mt-3 text-sm text-ivy-100">
+                  Every landlord in Uganda, however many properties they own, always knows exactly
+                  who&apos;s paid, who hasn&apos;t, and what needs their attention today — without
+                  opening a spreadsheet to find out.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
