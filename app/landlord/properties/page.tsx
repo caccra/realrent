@@ -7,6 +7,7 @@ import { Badge, Card } from "@/components/ui";
 import { PROPERTY_USAGES } from "@/lib/validations/property";
 import { navForRole } from "@/lib/landlord-nav";
 import { SearchFilterBox } from "@/components/search-filter-box";
+import { NoPhotoPlaceholder } from "@/components/no-photo-placeholder";
 import { formatMoney } from "@/lib/money";
 
 export default async function PropertiesPage() {
@@ -57,9 +58,7 @@ export default async function PropertiesPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                        No photo
-                      </div>
+                      <NoPhotoPlaceholder />
                     )}
                   </div>
                   <div className="p-5">

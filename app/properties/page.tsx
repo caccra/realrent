@@ -10,6 +10,7 @@ import { PropertyFilterBar } from "@/components/property-filter-bar";
 import { StarRating } from "@/components/star-rating";
 import { whatsappLink } from "@/lib/whatsapp";
 import { initials } from "@/lib/initials";
+import { NoPhotoPlaceholder } from "@/components/no-photo-placeholder";
 import type { PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -184,9 +185,7 @@ export default async function PublicPropertiesPage({
                       {property.images[0] ? (
                         <Image src={property.images[0].url} alt="" fill sizes="33vw" className="object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                          No photo
-                        </div>
+                        <NoPhotoPlaceholder />
                       )}
                       {justListed && (
                         <span className="absolute left-3 top-3 rounded-full bg-clay px-2.5 py-1 text-[11px] font-semibold text-white shadow">
