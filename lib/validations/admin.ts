@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizePhone } from "@/lib/phone";
 
 export const ADMIN_ASSIGNABLE_ROLES = [
   { value: "LANDLORD", label: "Landlord" },
@@ -48,6 +49,14 @@ export const updateUserProfileSchema = z.object({
   name: z.string().trim().min(2, "Name is too short"),
   phone: z.string().trim().min(9, "Enter a valid phone number"),
   email: z.string().trim().email().optional().or(z.literal("")),
+  whatsappNumber: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine((value) => !value || normalizePhone(value) !== null, {
+      message: "Enter a valid WhatsApp number starting with the country code, e.g. 0771234567 or +256771234567",
+    }),
 });
 
 export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;

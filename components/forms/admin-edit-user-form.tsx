@@ -13,7 +13,7 @@ export function AdminEditUserForm({
   defaultValues,
 }: {
   userId: string;
-  defaultValues: { name: string; phone: string; email: string };
+  defaultValues: { name: string; phone: string; email: string; whatsappNumber: string };
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -26,7 +26,11 @@ export function AdminEditUserForm({
     formState: { errors },
   } = useForm<UpdateUserProfileInput>({
     resolver: zodResolver(updateUserProfileSchema),
-    defaultValues: { ...defaultValues, phone: formatPhoneForDisplay(defaultValues.phone) },
+    defaultValues: {
+      ...defaultValues,
+      phone: formatPhoneForDisplay(defaultValues.phone),
+      whatsappNumber: defaultValues.whatsappNumber ? formatPhoneForDisplay(defaultValues.whatsappNumber) : "",
+    },
   });
 
   async function onSubmit(data: UpdateUserProfileInput) {
@@ -73,6 +77,11 @@ export function AdminEditUserForm({
           <Label htmlFor="editEmail">Email (optional)</Label>
           <Input id="editEmail" type="email" {...register("email")} />
           <FieldError message={errors.email?.message} />
+        </div>
+        <div>
+          <Label htmlFor="editWhatsapp">WhatsApp number (optional)</Label>
+          <Input id="editWhatsapp" {...register("whatsappNumber")} />
+          <FieldError message={errors.whatsappNumber?.message} />
         </div>
         {serverError && <p className="text-sm text-red-600">{serverError}</p>}
         <div className="flex gap-2">

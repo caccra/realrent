@@ -10,6 +10,7 @@ import { ADMIN_NAV } from "@/lib/admin-nav";
 import { AdminEditPropertySection } from "@/components/forms/admin-edit-property-section";
 import { AdminPropertyActiveToggle } from "@/components/forms/admin-property-active-toggle";
 import { AdminDeletePropertyButton } from "@/components/forms/admin-delete-property-button";
+import { PropertyPhotos } from "@/components/forms/property-photos";
 
 export default async function AdminPropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -76,6 +77,8 @@ export default async function AdminPropertyDetailPage({ params }: { params: Prom
           saleBathrooms: property.saleBathrooms ?? undefined,
         }}
       />
+
+      <PropertyPhotos propertyId={property.id} images={property.images} />
 
       <Card className="mb-6">
         <h2 className="mb-3 text-sm font-medium text-slate-900">Units ({property.units.length})</h2>

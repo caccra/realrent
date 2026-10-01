@@ -20,7 +20,9 @@ export const PATCH = withErrorHandling(async (
     where: { id: imageId },
     include: { property: true },
   });
-  if (!image || image.propertyId !== id || !(await canManageProperty(session.user.id, session.user.role, id))) {
+  const allowed =
+    session.user.role === "ADMIN" || (await canManageProperty(session.user.id, session.user.role, id));
+  if (!image || image.propertyId !== id || !allowed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -51,7 +53,9 @@ export const DELETE = withErrorHandling(async (
     where: { id: imageId },
     include: { property: true },
   });
-  if (!image || image.propertyId !== id || !(await canManageProperty(session.user.id, session.user.role, id))) {
+  const allowed =
+    session.user.role === "ADMIN" || (await canManageProperty(session.user.id, session.user.role, id));
+  if (!image || image.propertyId !== id || !allowed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

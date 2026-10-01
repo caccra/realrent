@@ -80,7 +80,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           <div className="mt-4 border-t border-slate-100 pt-4">
             <AdminEditUserForm
               userId={user.id}
-              defaultValues={{ name: user.name, phone: user.phone ?? "", email: user.email ?? "" }}
+              defaultValues={{
+                name: user.name,
+                phone: user.phone ?? "",
+                email: user.email ?? "",
+                whatsappNumber: user.whatsappNumber ?? "",
+              }}
             />
           </div>
         )}

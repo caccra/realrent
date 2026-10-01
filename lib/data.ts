@@ -215,6 +215,7 @@ export function getPropertyAdminDetail(propertyId: string) {
     include: {
       landlord: { select: { id: true, name: true, phone: true } },
       units: { select: { id: true, label: true, status: true } },
+      images: { orderBy: { order: "asc" }, select: { id: true, url: true, featured: true } },
       _count: { select: { units: true } },
     },
   });

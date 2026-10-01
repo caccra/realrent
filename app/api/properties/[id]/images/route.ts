@@ -19,7 +19,11 @@ export const POST = withErrorHandling(async (request, { params }) => {
     where: { id },
     include: { _count: { select: { images: true } } },
   });
-  if (!property || !(await canManageProperty(session.user.id, session.user.role, id))) {
+  // Admin support staff can manage a property's photos without being the
+  // owner/manager/caretaker canManageProperty normally requires.
+  const allowed =
+    session.user.role === "ADMIN" || (await canManageProperty(session.user.id, session.user.role, id));
+  if (!property || !allowed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

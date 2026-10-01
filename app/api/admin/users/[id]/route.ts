@@ -63,9 +63,16 @@ export const PATCH = withErrorHandling(async (request, { params }) => {
       return NextResponse.json({ error: "This phone number is already linked to another account" }, { status: 409 });
     }
 
+    const normalizedWhatsapp = parsed.data.whatsappNumber ? normalizePhone(parsed.data.whatsappNumber) : null;
+
     const updated = await prisma.user.update({
       where: { id },
-      data: { name: parsed.data.name, phone: normalizedPhone, email: parsed.data.email || null },
+      data: {
+        name: parsed.data.name,
+        phone: normalizedPhone,
+        email: parsed.data.email || null,
+        whatsappNumber: normalizedWhatsapp,
+      },
     });
     await logAudit({
       userId: session.user.id,
@@ -74,7 +81,13 @@ export const PATCH = withErrorHandling(async (request, { params }) => {
       targetId: id,
       metadata: { name: updated.name, phone: updated.phone },
     });
-    return NextResponse.json({ id: updated.id, name: updated.name, phone: updated.phone, email: updated.email });
+    return NextResponse.json({
+      id: updated.id,
+      name: updated.name,
+      phone: updated.phone,
+      email: updated.email,
+      whatsappNumber: updated.whatsappNumber,
+    });
   }
 
   if (body.action === "suspend") {
