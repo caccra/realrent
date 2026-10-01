@@ -1024,3 +1024,88 @@ export async function getTenantStats(tenantId: string) {
     nextDue,
   };
 }
+
+/** The current URA rental-tax year (1 July – 30 June), expressed as its starting calendar year. */
+export function currentTaxYearStart(): number {
+  const now = new Date();
+  return now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+/**
+ * A reference summary of rental income and expenses for one URA rental-tax
+ * year (1 July – 30 June), scoped to a landlord's own properties (or a
+ * property manager's assigned ones). This is deliberately NOT a tax
+ * calculator — it reports real recorded income/expenses so a landlord or
+ * their accountant can apply the current URA rate and threshold themselves,
+ * rather than this app asserting a tax owed that could go stale or wrong.
+ */
+export async function getRentalTaxSummary(landlordId: string, startYear: number) {
+  const periodStart = new Date(startYear, 6, 1);
+  const periodEnd = new Date(startYear + 1, 6, 1);
+  const propertyFilter = landlordOrManagerFilter(landlordId);
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      status: "SUCCESSFUL",
+      paidAt: { gte: periodStart, lt: periodEnd },
+      invoice: { lease: { unit: { property: propertyFilter } } },
+    },
+    select: {
+      amount: true,
+      currency: true,
+      invoice: { select: { lease: { select: { unit: { select: { property: { select: { id: true, name: true } } } } } } } },
+    },
+  });
+
+  const expenses = await prisma.expense.findMany({
+    where: { incurredAt: { gte: periodStart, lt: periodEnd }, property: propertyFilter },
+    select: { amount: true, currency: true, category: true },
+  });
+
+  const incomeByCurrency = new Map<string, number>();
+  const incomeByProperty = new Map<string, { id: string; name: string; amounts: Map<string, number> }>();
+  for (const p of payments) {
+    const amount = Number(p.amount);
+    incomeByCurrency.set(p.currency, (incomeByCurrency.get(p.currency) ?? 0) + amount);
+    const property = p.invoice.lease.unit.property;
+    const entry = incomeByProperty.get(property.id) ?? { id: property.id, name: property.name, amounts: new Map() };
+    entry.amounts.set(p.currency, (entry.amounts.get(p.currency) ?? 0) + amount);
+    incomeByProperty.set(property.id, entry);
+  }
+
+  const expensesByCurrency = new Map<string, number>();
+  const expensesByCategory = new Map<string, Map<string, number>>();
+  for (const e of expenses) {
+    const amount = Number(e.amount);
+    expensesByCurrency.set(e.currency, (expensesByCurrency.get(e.currency) ?? 0) + amount);
+    const catMap = expensesByCategory.get(e.category) ?? new Map<string, number>();
+    catMap.set(e.currency, (catMap.get(e.currency) ?? 0) + amount);
+    expensesByCategory.set(e.category, catMap);
+  }
+
+  const currencies = new Set([...incomeByCurrency.keys(), ...expensesByCurrency.keys()]);
+  const netByCurrency = Array.from(currencies).map((currency) => ({
+    currency,
+    income: incomeByCurrency.get(currency) ?? 0,
+    expenses: expensesByCurrency.get(currency) ?? 0,
+    net: (incomeByCurrency.get(currency) ?? 0) - (expensesByCurrency.get(currency) ?? 0),
+  }));
+
+  return {
+    label: `${startYear}/${startYear + 1}`,
+    periodStart,
+    periodEnd,
+    netByCurrency,
+    expensesByCategory: Array.from(expensesByCategory.entries()).map(([category, amounts]) => ({
+      category,
+      amounts: Array.from(amounts.entries()).map(([currency, amount]) => ({ currency, amount })),
+    })),
+    incomeByProperty: Array.from(incomeByProperty.values())
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        amounts: Array.from(p.amounts.entries()).map(([currency, amount]) => ({ currency, amount })),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  };
+}

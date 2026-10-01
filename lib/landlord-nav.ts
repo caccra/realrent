@@ -6,6 +6,7 @@ export const LANDLORD_NAV = [
   { href: "/landlord/complaints", label: "Complaints" },
   { href: "/landlord/maintenance", label: "Maintenance" },
   { href: "/landlord/reports", label: "Reports" },
+  { href: "/landlord/tax", label: "Rental Tax" },
   { href: "/landlord/settings", label: "Settings" },
   { href: "/account/security", label: "Security" },
 ];

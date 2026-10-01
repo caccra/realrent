@@ -30,6 +30,12 @@ export default async function ReportsPage() {
         <p className="text-sm text-slate-500">Occupancy, collections, and arrears across your portfolio.</p>
         <div className="flex gap-2">
           <Link
+            href="/landlord/tax"
+            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Rental tax summary
+          </Link>
+          <Link
             href="/landlord/payments"
             className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
