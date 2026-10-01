@@ -29,6 +29,7 @@ const ACTION_LABELS: Record<string, string> = {
   "admin.edit-user": "Profile edited by an admin",
   "admin.delete-user": "Account deleted by an admin",
   "admin.create-property": "Property added by an admin",
+  "admin.edit-property": "Property details edited by an admin",
   "admin.activate-property": "Property reactivated by an admin",
   "admin.deactivate-property": "Property hidden by an admin",
 };
@@ -75,7 +76,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             </div>
           )}
         </div>
-        {isSuperAdmin && id !== admin.id && (
+        {id !== admin.id && (
           <div className="mt-4 border-t border-slate-100 pt-4">
             <AdminEditUserForm
               userId={user.id}

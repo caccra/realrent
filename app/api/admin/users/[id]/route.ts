@@ -10,7 +10,7 @@ import { withErrorHandling, readJsonBody } from "@/lib/api-handler";
 export const PATCH = withErrorHandling(async (request, { params }) => {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "SUPER_ADMIN") {
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (id === session.user.id) {
@@ -23,6 +23,15 @@ export const PATCH = withErrorHandling(async (request, { params }) => {
   }
 
   const body = (await readJsonBody(request)) as Record<string, unknown>;
+
+  // Changing a user's role can grant admin/super-admin access, and suspension
+  // is an account-level lockout — both stay SUPER_ADMIN-only. A regular admin
+  // can only edit profile details (handled below).
+  if (body.action === "set-role" || body.action === "suspend") {
+    if (session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
 
   if (body.action === "set-role") {
     const parsed = updateUserRoleSchema.safeParse(body);

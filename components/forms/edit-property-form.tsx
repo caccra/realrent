@@ -12,10 +12,14 @@ export function EditPropertyForm({
   propertyId,
   defaultValues,
   onDone,
+  endpoint,
+  action,
 }: {
   propertyId: string;
   defaultValues: PropertyInput;
   onDone: () => void;
+  endpoint?: string;
+  action?: string;
 }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -41,10 +45,10 @@ export function EditPropertyForm({
     setServerError(null);
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/properties/${propertyId}`, {
+      const res = await fetch(endpoint ?? `/api/properties/${propertyId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(action ? { action, ...data } : data),
       });
       const body = await res.json();
       if (!res.ok) {

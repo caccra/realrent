@@ -17,7 +17,13 @@ export function AdminEditPropertySection({
   if (editing) {
     return (
       <Card className="mb-6">
-        <EditPropertyForm propertyId={propertyId} defaultValues={defaultValues} onDone={() => setEditing(false)} />
+        <EditPropertyForm
+          propertyId={propertyId}
+          defaultValues={defaultValues}
+          onDone={() => setEditing(false)}
+          endpoint={`/api/admin/properties/${propertyId}`}
+          action="edit"
+        />
       </Card>
     );
   }

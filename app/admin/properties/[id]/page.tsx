@@ -59,27 +59,23 @@ export default async function AdminPropertyDetailPage({ params }: { params: Prom
         )}
       </Card>
 
-      {isSuperAdmin && (
-        <>
-          <AdminEditPropertySection
-            propertyId={property.id}
-            defaultValues={{
-              name: property.name,
-              address: property.address,
-              location: property.location ?? "",
-              description: property.description ?? "",
-              usage: property.usage ?? "",
-              propertyType: property.propertyType ?? "",
-              amenities: property.amenities,
-              listingType: property.listingType,
-              salePrice: property.salePrice != null ? Number(property.salePrice) : undefined,
-              saleCurrency: property.saleCurrency,
-              saleBedrooms: property.saleBedrooms ?? undefined,
-              saleBathrooms: property.saleBathrooms ?? undefined,
-            }}
-          />
-        </>
-      )}
+      <AdminEditPropertySection
+        propertyId={property.id}
+        defaultValues={{
+          name: property.name,
+          address: property.address,
+          location: property.location ?? "",
+          description: property.description ?? "",
+          usage: property.usage ?? "",
+          propertyType: property.propertyType ?? "",
+          amenities: property.amenities,
+          listingType: property.listingType,
+          salePrice: property.salePrice != null ? Number(property.salePrice) : undefined,
+          saleCurrency: property.saleCurrency,
+          saleBedrooms: property.saleBedrooms ?? undefined,
+          saleBathrooms: property.saleBathrooms ?? undefined,
+        }}
+      />
 
       <Card className="mb-6">
         <h2 className="mb-3 text-sm font-medium text-slate-900">Units ({property.units.length})</h2>
