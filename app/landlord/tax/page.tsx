@@ -8,6 +8,7 @@ import { PrintButton } from "@/components/print-button";
 import { formatMoney, type Currency } from "@/lib/money";
 import { navForRole } from "@/lib/landlord-nav";
 import { EXPENSE_CATEGORIES } from "@/lib/validations/expense";
+import { RentalTaxCalculator } from "@/components/forms/rental-tax-calculator";
 
 const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
   EXPENSE_CATEGORIES.map((c) => [c.value, c.label])
@@ -118,6 +119,27 @@ export default async function RentalTaxPage({
           </Card>
         ))}
       </div>
+
+      {taxpayerType && summary.netByCurrency.length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-1 text-sm font-medium text-slate-900">Estimate your tax</h2>
+          <p className="mb-3 text-xs text-slate-500">
+            Edit the rate{taxpayerType === "INDIVIDUAL" ? " and threshold" : " and cap"} below to match current URA
+            guidance — the starting values are a reference point, not confirmed-current figures.
+          </p>
+          <div className={`grid grid-cols-1 gap-4 ${summary.netByCurrency.length > 1 ? "sm:grid-cols-2" : ""}`}>
+            {summary.netByCurrency.map((row) => (
+              <RentalTaxCalculator
+                key={row.currency}
+                currency={row.currency as Currency}
+                grossIncome={row.income}
+                recordedExpenses={row.expenses}
+                taxpayerType={taxpayerType}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {summary.expensesByCategory.length > 0 && (
         <Card className="mt-6">
