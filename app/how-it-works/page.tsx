@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
-import { Card } from "@/components/ui";
 
 const STEP_ICONS = {
   building: "M4 21V7l8-4 8 4v14M9 21v-6h6v6M4 21h16",
@@ -15,7 +14,6 @@ const STEPS = [
   {
     icon: STEP_ICONS.building,
     title: "Add your properties",
-    description: "Start by adding your properties and units to the platform.",
     items: [
       "Property information and location",
       "Units, bedrooms, and dimensions",
@@ -27,28 +25,24 @@ const STEPS = [
   {
     icon: STEP_ICONS.people,
     title: "Add your tenants",
-    description: "Create tenant profiles and connect each tenant to their property and unit.",
     items: ["Contact information", "Lease details and deposit", "Documents (ID, signed agreements)", "Payment and screening history"],
     footer: "Everything you need about your tenants, ready whenever you need it.",
   },
   {
     icon: STEP_ICONS.cash,
     title: "Manage leases & rent",
-    description: "Create and manage leases while keeping track of rent payments and outstanding balances.",
     items: ["Upcoming and paid rent", "Outstanding balances", "Expiring leases", "Full payment history with receipts"],
     footer: "Know what has been paid, what is due, and what needs attention.",
   },
   {
     icon: STEP_ICONS.wrench,
     title: "Manage maintenance",
-    description: "Tenants report issues while managers track, and resolve requests.",
     items: ["Report → Assign → Track → Resolve", "Costs and vendor notes", "Full maintenance history per property"],
     footer: "Keep maintenance requests connected to the right property.",
   },
   {
     icon: STEP_ICONS.chart,
     title: "Monitor your business",
-    description: "Use your dashboard and reports to understand how your properties are performing.",
     items: ["Occupancy and vacancy trends", "Rental income and expenses", "Outstanding payments", "Lease expirations and performance by property"],
     footer: "Turn your property data into useful insights.",
   },
@@ -131,11 +125,12 @@ const PROPERTY_HOWTO = [
   },
 ] as const;
 
-function NumberChip({ children }: { children: React.ReactNode }) {
+function Check({ children }: { children: React.ReactNode }) {
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-clay text-xs font-semibold text-white">
+    <li className="flex items-start gap-2 text-sm text-ivy-100">
+      <span className="mt-0.5 text-clay">✓</span>
       {children}
-    </span>
+    </li>
   );
 }
 
@@ -164,81 +159,80 @@ export default function HowItWorksPage() {
           </p>
         </section>
 
-        <section className="mx-auto max-w-3xl space-y-6 px-6 pb-16">
-          {STEPS.map((step, i) => (
-            <Card key={step.title} className="border-ink bg-ink">
-              <div className="flex items-start gap-4">
-                <StepIcon path={step.icon} />
-                <div className="min-w-0 flex-1">
+        <section className="bg-ivy-900 py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <p className="text-xs font-semibold tracking-wide text-clay">GETTING STARTED</p>
+            <h2 className="mt-2 max-w-xl font-heading text-2xl font-bold text-white sm:text-3xl">
+              Five steps to a running portfolio
+            </h2>
+
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <div key={step.title} className="rounded-xl border border-white/10 bg-white/5 p-6">
                   <div className="flex items-center gap-3">
-                    <NumberChip>{i + 1}</NumberChip>
-                    <h2 className="font-heading text-lg font-bold text-white">{step.title}</h2>
+                    <StepIcon path={step.icon} />
+                    <div>
+                      <p className="text-xs font-semibold text-clay">STEP {i + 1}</p>
+                      <h3 className="font-heading text-base font-bold text-white">{step.title}</h3>
+                    </div>
                   </div>
-                  <p className="mt-2 text-sm text-ivy-100">{step.description}</p>
-                  <ul className="mt-3 space-y-1 text-sm text-ivy-100">
+                  <ul className="mt-4 space-y-2">
                     {step.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <span className="mt-0.5 text-clay">•</span>
-                        {item}
-                      </li>
+                      <Check key={item}>{item}</Check>
                     ))}
                   </ul>
-                  <p className="mt-3 text-sm font-medium text-white">{step.footer}</p>
+                  <p className="mt-4 text-sm font-medium text-white">{step.footer}</p>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </section>
-
-        <section className="border-t border-slate-200 bg-white py-16">
-          <div className="mx-auto max-w-5xl px-6">
-            <h2 className="text-center font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
-              How it works for every role
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-slate-600">
-              Everyone in a lease gets their own portal, with access that fits what they actually do.
-            </p>
-
-            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {ROLE_GUIDES.map((guide) => (
-                <Card key={guide.role} className="border-ink bg-ink">
-                  <h3 className="font-heading text-base font-bold text-white">{guide.role}</h3>
-                  <p className="mt-1 text-sm text-ivy-200">{guide.summary}</p>
-                  <ol className="mt-4 space-y-2">
-                    {guide.steps.map((step, i) => (
-                      <li key={step} className="flex items-start gap-2.5 text-sm text-ivy-100">
-                        <NumberChip>{i + 1}</NumberChip>
-                        {step}
-                      </li>
-                    ))}
-                  </ol>
-                </Card>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="mx-auto max-w-5xl px-6">
-            <h2 className="text-center font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+        <section className="bg-ivy-900 py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <p className="text-xs font-semibold tracking-wide text-clay">FOR EVERY ROLE</p>
+            <h2 className="mt-2 max-w-xl font-heading text-2xl font-bold text-white sm:text-3xl">
+              How it works for every role
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-ivy-100">
+              Everyone in a lease gets their own portal, with access that fits what they actually do.
+            </p>
+
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {ROLE_GUIDES.map((guide) => (
+                <div key={guide.role} className="rounded-xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-xs font-semibold text-clay">{guide.role.toUpperCase()}</p>
+                  <h3 className="mt-2 font-heading text-base font-bold text-white">{guide.summary}</h3>
+                  <ul className="mt-4 space-y-2">
+                    {guide.steps.map((step) => (
+                      <Check key={step}>{step}</Check>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-ivy-900 py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <p className="text-xs font-semibold tracking-wide text-clay">PROPERTIES</p>
+            <h2 className="mt-2 max-w-xl font-heading text-2xl font-bold text-white sm:text-3xl">
               Adding and searching for properties
             </h2>
 
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {PROPERTY_HOWTO.map((guide) => (
-                <Card key={guide.title} className="flex h-full flex-col border-ink bg-ink">
-                  <h3 className="font-heading text-base font-bold text-white">{guide.title}</h3>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wide text-clay">{guide.who}</p>
-                  <ol className="mt-4 space-y-2">
-                    {guide.steps.map((step, i) => (
-                      <li key={step} className="flex items-start gap-2.5 text-sm text-ivy-100">
-                        <NumberChip>{i + 1}</NumberChip>
-                        {step}
-                      </li>
+                <div key={guide.title} className="flex h-full flex-col rounded-xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-xs font-semibold text-clay">{guide.who.toUpperCase()}</p>
+                  <h3 className="mt-2 font-heading text-base font-bold text-white">{guide.title}</h3>
+                  <ul className="mt-4 space-y-2">
+                    {guide.steps.map((step) => (
+                      <Check key={step}>{step}</Check>
                     ))}
-                  </ol>
+                  </ul>
                   <div className="mt-auto pt-6">
-                    <p className="text-sm text-ivy-200">{guide.encouragement}</p>
+                    <p className="text-sm text-ivy-100">{guide.encouragement}</p>
                     <Link
                       href={guide.cta.href}
                       className="mt-3 inline-block rounded-md bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"
@@ -246,7 +240,7 @@ export default function HowItWorksPage() {
                       {guide.cta.label}
                     </Link>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           </div>
