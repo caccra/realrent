@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { InstallPrompt } from "@/components/install-prompt";
+import { BackToTop } from "@/components/back-to-top";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>{children}</Providers>
         <ServiceWorkerRegister />
         <InstallPrompt />
+        <BackToTop />
       </body>
     </html>
   );
