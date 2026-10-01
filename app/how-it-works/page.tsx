@@ -3,9 +3,17 @@ import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Card } from "@/components/ui";
 
+const STEP_ICONS = {
+  building: "M4 21V7l8-4 8 4v14M9 21v-6h6v6M4 21h16",
+  people: "M8 11a3 3 0 100-6 3 3 0 000 6zM16 11a3 3 0 100-6 3 3 0 000 6zM2 21c0-3.3 2.7-6 6-6s6 2.7 6 6M14 15.2c2.9.4 5 2.9 5 5.8",
+  cash: "M3 8h18M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2zM7 15h4",
+  wrench: "M14.7 6.3a4 4 0 10-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.8-2.8z",
+  chart: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+} as const;
+
 const STEPS = [
   {
-    number: "01",
+    icon: STEP_ICONS.building,
     title: "Add your properties",
     description: "Start by adding your properties and units to the platform.",
     items: [
@@ -17,28 +25,28 @@ const STEPS = [
     footer: "Get your portfolio organized from day one.",
   },
   {
-    number: "02",
+    icon: STEP_ICONS.people,
     title: "Add your tenants",
     description: "Create tenant profiles and connect each tenant to their property and unit.",
     items: ["Contact information", "Lease details and deposit", "Documents (ID, signed agreements)", "Payment and screening history"],
     footer: "Everything you need about your tenants, ready whenever you need it.",
   },
   {
-    number: "03",
+    icon: STEP_ICONS.cash,
     title: "Manage leases & rent",
     description: "Create and manage leases while keeping track of rent payments and outstanding balances.",
     items: ["Upcoming and paid rent", "Outstanding balances", "Expiring leases", "Full payment history with receipts"],
     footer: "Know what has been paid, what is due, and what needs attention.",
   },
   {
-    number: "04",
+    icon: STEP_ICONS.wrench,
     title: "Manage maintenance",
     description: "Tenants report issues while managers track, and resolve requests.",
     items: ["Report → Assign → Track → Resolve", "Costs and vendor notes", "Full maintenance history per property"],
     footer: "Keep maintenance requests connected to the right property.",
   },
   {
-    number: "05",
+    icon: STEP_ICONS.chart,
     title: "Monitor your business",
     description: "Use your dashboard and reports to understand how your properties are performing.",
     items: ["Occupancy and vacancy trends", "Rental income and expenses", "Outstanding payments", "Lease expirations and performance by property"],
@@ -123,6 +131,24 @@ const PROPERTY_HOWTO = [
   },
 ] as const;
 
+function NumberChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-clay text-xs font-semibold text-white">
+      {children}
+    </span>
+  );
+}
+
+function StepIcon({ path }: { path: string }) {
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-clay text-white">
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <path d={path} />
+      </svg>
+    </span>
+  );
+}
+
 export default function HowItWorksPage() {
   return (
     <div className="flex flex-1 flex-col bg-sand">
@@ -130,7 +156,7 @@ export default function HowItWorksPage() {
 
       <main className="flex-1">
         <section className="mx-auto max-w-3xl px-6 py-16 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Property management made simple
           </h1>
           <p className="mt-6 text-lg text-slate-600">
@@ -138,23 +164,26 @@ export default function HowItWorksPage() {
           </p>
         </section>
 
-        <section className="mx-auto max-w-3xl space-y-8 px-6 pb-16">
-          {STEPS.map((step) => (
-            <Card key={step.number}>
+        <section className="mx-auto max-w-3xl space-y-6 px-6 pb-16">
+          {STEPS.map((step, i) => (
+            <Card key={step.title} className="border-ink bg-ink">
               <div className="flex items-start gap-4">
-                <span className="text-2xl font-semibold text-ivy-200">{step.number}</span>
-                <div>
-                  <h2 className="text-lg font-medium text-slate-900">{step.title}</h2>
-                  <p className="mt-1 text-sm text-slate-600">{step.description}</p>
-                  <ul className="mt-3 space-y-1 text-sm text-slate-600">
+                <StepIcon path={step.icon} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-3">
+                    <NumberChip>{i + 1}</NumberChip>
+                    <h2 className="font-heading text-lg font-bold text-white">{step.title}</h2>
+                  </div>
+                  <p className="mt-2 text-sm text-ivy-100">{step.description}</p>
+                  <ul className="mt-3 space-y-1 text-sm text-ivy-100">
                     {step.items.map((item) => (
                       <li key={item} className="flex items-start gap-2">
-                        <span className="mt-0.5 text-ivy-600">•</span>
+                        <span className="mt-0.5 text-clay">•</span>
                         {item}
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3 text-sm font-medium text-slate-700">{step.footer}</p>
+                  <p className="mt-3 text-sm font-medium text-white">{step.footer}</p>
                 </div>
               </div>
             </Card>
@@ -172,15 +201,13 @@ export default function HowItWorksPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {ROLE_GUIDES.map((guide) => (
-                <Card key={guide.role}>
-                  <h3 className="font-heading text-base font-bold text-slate-900">{guide.role}</h3>
-                  <p className="mt-1 text-sm text-slate-500">{guide.summary}</p>
+                <Card key={guide.role} className="border-ink bg-ink">
+                  <h3 className="font-heading text-base font-bold text-white">{guide.role}</h3>
+                  <p className="mt-1 text-sm text-ivy-200">{guide.summary}</p>
                   <ol className="mt-4 space-y-2">
                     {guide.steps.map((step, i) => (
-                      <li key={step} className="flex items-start gap-2.5 text-sm text-slate-600">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ivy-100 text-[11px] font-semibold text-ivy-800">
-                          {i + 1}
-                        </span>
+                      <li key={step} className="flex items-start gap-2.5 text-sm text-ivy-100">
+                        <NumberChip>{i + 1}</NumberChip>
                         {step}
                       </li>
                     ))}
@@ -199,24 +226,22 @@ export default function HowItWorksPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {PROPERTY_HOWTO.map((guide) => (
-                <Card key={guide.title} className="flex h-full flex-col">
-                  <h3 className="font-heading text-base font-bold text-slate-900">{guide.title}</h3>
+                <Card key={guide.title} className="flex h-full flex-col border-ink bg-ink">
+                  <h3 className="font-heading text-base font-bold text-white">{guide.title}</h3>
                   <p className="mt-1 text-xs font-medium uppercase tracking-wide text-clay">{guide.who}</p>
                   <ol className="mt-4 space-y-2">
                     {guide.steps.map((step, i) => (
-                      <li key={step} className="flex items-start gap-2.5 text-sm text-slate-600">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ivy-100 text-[11px] font-semibold text-ivy-800">
-                          {i + 1}
-                        </span>
+                      <li key={step} className="flex items-start gap-2.5 text-sm text-ivy-100">
+                        <NumberChip>{i + 1}</NumberChip>
                         {step}
                       </li>
                     ))}
                   </ol>
                   <div className="mt-auto pt-6">
-                    <p className="text-sm text-slate-500">{guide.encouragement}</p>
+                    <p className="text-sm text-ivy-200">{guide.encouragement}</p>
                     <Link
                       href={guide.cta.href}
-                      className="mt-3 inline-block rounded-md bg-ivy-700 px-4 py-2 text-sm font-medium text-white hover:bg-ivy-800"
+                      className="mt-3 inline-block rounded-md bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                     >
                       {guide.cta.label}
                     </Link>
@@ -228,7 +253,7 @@ export default function HowItWorksPage() {
         </section>
 
         <section className="border-t border-slate-200 bg-white py-16 text-center">
-          <h2 className="text-2xl font-semibold text-slate-900">Ready to get started?</h2>
+          <h2 className="font-heading text-2xl font-bold text-slate-900 sm:text-3xl">Ready to get started?</h2>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/register?role=LANDLORD"
