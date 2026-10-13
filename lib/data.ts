@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Currency, Prisma, PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 import { invoiceTotalDue } from "@/lib/invoice-total";
@@ -276,7 +277,10 @@ export function incrementPropertyView(propertyId: string) {
   });
 }
 
-export function getPublicPropertyDetail(propertyId: string) {
+// Wrapped in React's cache() so generateMetadata and the page component
+// (which both need this) share one request-deduped fetch instead of
+// querying the DB twice per page view.
+export const getPublicPropertyDetail = cache((propertyId: string) => {
   return prisma.property.findFirst({
     where: {
       id: propertyId,
@@ -302,7 +306,7 @@ export function getPublicPropertyDetail(propertyId: string) {
       },
     },
   });
-}
+});
 
 export function getLandlordProperties(landlordId: string) {
   return prisma.property.findMany({

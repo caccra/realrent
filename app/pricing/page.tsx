@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Card } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Kezavi pricing for Uganda landlords and property managers — start free for up to 5 units, or upgrade for Mobile Money collection, property managers, caretakers, and maintenance tracking as your portfolio grows.",
+  alternates: { canonical: "/pricing" },
+};
 
 const PLANS = [
   {

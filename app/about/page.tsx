@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Card } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Kezavi was built to make property and tenancy management simpler for Uganda's landlords, property managers, and tenants — digital leases, rent tracking, and automated receipts in one place.",
+  alternates: { canonical: "/about" },
+};
 
 const VALUES = [
   {

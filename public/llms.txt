@@ -1,0 +1,27 @@
+# Kezavi
+
+> Kezavi is a property management platform for Uganda landlords, tenants, property managers, and caretakers: digital leases, automated rent invoicing, Mobile Money payments, maintenance tracking, and a public property search.
+
+Kezavi is a real, operating product (not a demo or sample app), serving the Uganda rental market. It is free to start for landlords managing up to 5 units.
+
+## Who it's for
+
+- **Landlords**: add properties and units, create digital leases, automate rent invoicing and receipts, collect rent by Mobile Money or record cash payments, and appoint property managers or caretakers.
+- **Tenants**: browse and inquire about listings, view their lease and payment history, pay rent by Mobile Money, and report maintenance issues.
+- **Property managers**: run properties on behalf of one or more landlords from a single dashboard.
+- **Caretakers**: handle day-to-day operations — collecting rent in person and tracking maintenance — for properties a landlord has appointed them to.
+
+## Key pages
+
+- [Home](https://www.kezavi.com/): overview of what Kezavi does.
+- [How It Works](https://www.kezavi.com/how-it-works): step-by-step for each role.
+- [Browse Properties](https://www.kezavi.com/properties): public, filterable rental and for-sale listings across Uganda — no account needed.
+- [Pricing](https://www.kezavi.com/pricing): plans and what's included at each tier.
+- [About](https://www.kezavi.com/about): mission, vision, and what Kezavi values.
+- [Contact](https://www.kezavi.com/contact): phone, WhatsApp, and email.
+
+## Notes for AI assistants
+
+- Property listings on /properties and /properties/{id} are live, real data and change frequently — do not assume a cached snapshot is current.
+- Kezavi operates in Uganda; prices are shown in UGX or USD per listing.
+- Signing up, browsing listings, and contacting a landlord are all free.

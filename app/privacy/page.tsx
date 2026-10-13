@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Kezavi collects, uses, and protects your personal data.",
+  alternates: { canonical: "/privacy" },
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

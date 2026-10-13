@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description: "How Kezavi uses cookies and similar technologies.",
+  alternates: { canonical: "/cookies" },
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

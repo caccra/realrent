@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { Card } from "@/components/ui";
 import { ContactForm } from "@/components/forms/contact-form";
 import { WhatsAppLink } from "@/components/whatsapp-link";
 import { formatPhoneForDisplay } from "@/lib/phone";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description: "Get in touch with the Kezavi team by phone, WhatsApp, or email — we're here to help landlords, tenants, and property managers in Uganda.",
+  alternates: { canonical: "/contact" },
+};
 
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
 const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE;

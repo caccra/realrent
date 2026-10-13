@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getPropertyReviewSummaries, getPublicProperties } from "@/lib/data";
@@ -14,6 +15,16 @@ import { NoPhotoPlaceholder } from "@/components/no-photo-placeholder";
 import type { PropertyListingType, PropertyType, PropertyUsage } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+// A single, filter-agnostic canonical: query-string filter combinations are
+// the same underlying listing set, and letting each one self-canonicalize
+// would split ranking signal across endless near-duplicate URLs.
+export const metadata: Metadata = {
+  title: "Properties for Rent & Sale in Uganda",
+  description:
+    "Browse verified rental and for-sale properties across Uganda on Kezavi — filter by location, price, bedrooms, and property type, and contact landlords directly.",
+  alternates: { canonical: "/properties" },
+};
 
 const JUST_LISTED_DAYS = 14;
 
@@ -183,7 +194,13 @@ export default async function PublicPropertiesPage({
                   <Link href={`/properties/${property.id}`}>
                     <div className="relative aspect-video bg-slate-100">
                       {property.images[0] ? (
-                        <Image src={property.images[0].url} alt="" fill sizes="33vw" className="object-cover" />
+                        <Image
+                          src={property.images[0].url}
+                          alt={`${property.name} — ${property.location || property.address}`}
+                          fill
+                          sizes="33vw"
+                          className="object-cover"
+                        />
                       ) : (
                         <NoPhotoPlaceholder />
                       )}

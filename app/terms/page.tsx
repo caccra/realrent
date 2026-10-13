@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "The terms that govern your use of Kezavi.",
+  alternates: { canonical: "/terms" },
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

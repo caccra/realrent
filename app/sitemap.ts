@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { SITE_URL } from "@/lib/site";
 
 // Computed per-request rather than baked into the build: a sitemap querying
 // the DB at build time means a slow/unreachable database can fail the whole
@@ -7,8 +8,6 @@ import { prisma } from "@/lib/prisma";
 // Vercel project). Also never let a DB hiccup at request time 500 the route;
 // degrade to the static routes instead.
 export const dynamic = "force-dynamic";
-
-const SITE_URL = process.env.NEXTAUTH_URL || "https://kezavi.com";
 
 const STATIC_ROUTES = [
   "",
@@ -23,9 +22,11 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // No lastModified here: these are static marketing pages with no tracked
+  // change date, and claiming "now" on every crawl is a false freshness
+  // signal that can waste crawl budget.
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((path) => ({
     url: `${SITE_URL}${path}`,
-    lastModified: new Date(),
     changeFrequency: path === "" ? "daily" : "weekly",
     priority: path === "" ? 1 : 0.6,
   }));

@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+
+export const metadata: Metadata = {
+  title: "How It Works",
+  description:
+    "See how Kezavi works for landlords, tenants, property managers, and caretakers — from adding a property and creating a lease to automated rent invoicing, Mobile Money payments, and maintenance tracking.",
+  alternates: { canonical: "/how-it-works" },
+};
 
 const STEP_ICONS = {
   building: "M4 21V7l8-4 8 4v14M9 21v-6h6v6M4 21h16",

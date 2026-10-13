@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -15,6 +16,54 @@ import { unitDetailLine } from "@/lib/unit-details";
 import { PropertyInquiryForm } from "@/components/forms/property-inquiry-form";
 import { WhatsAppLink } from "@/components/whatsapp-link";
 import { initials } from "@/lib/initials";
+import { SITE_URL } from "@/lib/site";
+
+function priceSummary(property: NonNullable<Awaited<ReturnType<typeof getPublicPropertyDetail>>>) {
+  if (property.listingType === "SALE") {
+    return property.salePrice != null ? formatMoney(property.salePrice.toString(), property.saleCurrency) : null;
+  }
+  const cheapest = property.units[0];
+  return cheapest ? `${formatMoney(cheapest.rentAmount.toString(), cheapest.currency)}/${cheapest.billingCycle.toLowerCase()}` : null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const property = await getPublicPropertyDetail(id);
+  if (!property) {
+    return { title: "Property Not Found" };
+  }
+
+  const isSale = property.listingType === "SALE";
+  const location = property.location || property.address;
+  const price = priceSummary(property);
+  const title = `${property.name} — ${isSale ? "For Sale" : "For Rent"} in ${location}`;
+  const description = property.description
+    ? property.description.length > 155
+      ? `${property.description.slice(0, 155)}…`
+      : property.description
+    : [property.name, `in ${location}`, isSale ? "for sale" : "for rent", price ? `at ${price}` : null, "on Kezavi."]
+        .filter(Boolean)
+        .join(" ");
+  const image = property.images[0]?.url;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/properties/${id}` },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/properties/${id}`,
+      images: image ? [{ url: image, width: 1200, height: 630, alt: property.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 export default async function PublicPropertyDetailPage({
   params,
@@ -113,8 +162,33 @@ export default async function PublicPropertyDetailPage({
     </Card>
   );
 
+  const price = priceSummary(property);
+  const propertyJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: property.name,
+    description: property.description || undefined,
+    url: `${SITE_URL}/properties/${id}`,
+    image: property.images.map((img) => img.url),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: property.address,
+      addressLocality: property.location || undefined,
+      addressCountry: "UG",
+    },
+    offers: price
+      ? {
+          "@type": "Offer",
+          price: isSale ? Number(property.salePrice) : Number(property.units[0]?.rentAmount),
+          priceCurrency: isSale ? property.saleCurrency : property.units[0]?.currency,
+          availability: "https://schema.org/InStock",
+        }
+      : undefined,
+  };
+
   return (
     <div className="flex flex-1 flex-col bg-sand">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(propertyJsonLd) }} />
       <PublicHeader />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
@@ -124,7 +198,14 @@ export default async function PublicPropertyDetailPage({
 
         {property.images.length === 1 ? (
           <div className="relative mb-6 aspect-[16/9] overflow-hidden rounded-xl bg-slate-100">
-            <Image src={property.images[0].url} alt="" fill sizes="100vw" priority className="object-cover" />
+            <Image
+              src={property.images[0].url}
+              alt={`${property.name} — ${property.location || property.address}`}
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
+            />
           </div>
         ) : (
           property.images.length > 1 && (
@@ -136,7 +217,13 @@ export default async function PublicPropertyDetailPage({
                     i === 0 ? "col-span-2 row-span-2 aspect-[4/3] sm:aspect-auto" : "aspect-square"
                   }`}
                 >
-                  <Image src={image.url} alt="" fill sizes="50vw" className="object-cover" />
+                  <Image
+                    src={image.url}
+                    alt={`${property.name} — photo ${i + 1} of ${property.images.length}`}
+                    fill
+                    sizes="50vw"
+                    className="object-cover"
+                  />
                 </div>
               ))}
             </div>
